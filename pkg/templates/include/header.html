@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Book affordable accommodation We Offer verified Booking,  Reservations, Bespoke airport transfer Packages & Much More. Book..." >
+	<meta name="robot" content="noindex, nofollow">
+	<meta name="author" content="Debby Sinkalu">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/bootstrap-icons/font/bootstrap-icons.css">
+	<link href="/static/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/fontawesome/css/all.min.css">
+	<link href="/static/css/main.css" rel="stylesheet">
+    <title>Verified Short-let Apartments</title>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+             <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+                <div class="container">
+                    <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+                    <i class="bi bi-shop fs-4"></i>  DebKits Short-let
+                 </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+                <div class="d-flex gap-2 align-items-center">
+                    <a href="{{url_for('login')}}" class="custom-btn custom-btn-outline"><i class="bi bi-box-arrow-in-right ms-2"></i> Login</a>
+                    <a href="{{url_for('register')}}" class="custom-btn custom-btn-outline"><i class="bi bi-person-plus ms-2"></i> Register</a>
+                    <div class="dropdown ms-1">
+                        <button class="custom-btn custom-btn-outline dropdown-toggle d-flex align-items-center gap-1" type="button" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle"></i> Hello, User
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" aria-labelledby="profileDropdown">
+                            <li><a class="dropdown-item py-2" href="/profile/"><i class="bi bi-person me-2 text-muted"></i>My Profile</a></li>
+                            <li><a class="dropdown-item py-2" href="/profile/settings/"><i class="bi bi-gear me-2 text-muted"></i>Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item py-2 text-danger" href="/login/"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </nav>
+        </div>
+</html>

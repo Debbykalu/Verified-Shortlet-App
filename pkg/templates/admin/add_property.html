@@ -1,0 +1,1049 @@
+{% extends "user/layout.html" %}
+
+{% block main_content %}
+
+<div class="container-fluid py-4">
+
+    <!-- Page Header -->
+
+    <div class="row mt-5 pt-5 add-property">
+
+        <div class="col-md-8 mb-2">
+
+            <h2 class="fw-bold">
+
+                <i class="fa-solid fa-building-circle-plus text-primary me-2"></i>
+
+                Add New Property
+
+            </h2>
+
+            <p class="text-muted">
+
+                Fill in the details below to create a new property listing.
+
+            </p>
+
+        </div>
+
+        <div class="col-md-4 text-md-end mb-2">
+
+            <a href="{{ url_for('admin_dashboard') }}"
+               class="btn btn-outline-secondary rounded-pill">
+
+                <i class="fa-solid fa-arrow-left me-2"></i>
+
+                Back to Properties
+
+            </a>
+
+        </div>
+
+    </div>
+
+    <!-- Form Card -->
+
+    <div class="card border-0 shadow-sm rounded-4">
+
+        <div class="card-header bg-white py-3">
+
+            <h4 class="mb-0 fw-bold">
+
+                Property Information
+
+            </h4>
+
+        </div>
+
+        <div class="card-body">
+
+            <form id="addPropertyForm"
+                method="POST"
+                enctype="multipart/form-data">
+
+                
+
+                {% if csrf_token %}
+
+                    <input
+                        type="hidden"
+                        name="csrf_token"
+                        value="{{ csrf_token() }}">
+
+                {% endif %}
+  
+
+<!-- BASIC INFORMATION -->
+
+<div class="border rounded-4 p-4 mb-4">
+
+    <div class="mb-4">
+
+        <h5 class="fw-bold">
+
+            <i class="fa-solid fa-circle-info text-primary me-2"></i>
+
+            Basic Information
+
+        </h5>
+
+        <p class="text-muted">
+
+            Enter the property's basic details.
+
+        </p>
+
+    </div>
+
+    <div class="row g-4">
+
+        <!-- Property Title -->
+
+        <div class="col-md-6">
+
+            <label class="form-label fw-semibold">
+
+                Property Title
+
+            </label>
+
+            <input
+                type="text"
+                class="form-control"
+                name="prop_title"
+                required>
+
+        </div>
+
+        <!-- Property Type -->
+
+        <div class="col-md-6">
+
+            <label class="form-label fw-semibold">
+
+                Property Type
+
+            </label>
+
+            <select
+                class="form-select"
+                name="prop_typeid"
+                required>
+
+                <option value="">
+
+                    Select Property Type
+
+                </option>
+
+                {% for type in property_types %}
+
+                <option value="{{ type.prop_type_id }}">
+
+                    {{ type.prop_typename }}
+
+                </option>
+
+                {% endfor %}
+
+            </select>
+
+        </div>
+
+        <!-- Property Category -->
+
+        <div class="col-md-6">
+
+            <label class="form-label fw-semibold">
+
+                Property Category
+
+            </label>
+
+            <select
+                class="form-select"
+                name="prop_category">
+
+                <option value="">
+
+                    Select Category
+
+                </option>
+
+                <option value="Shortlet">
+
+                    Shortlet
+
+                </option>
+
+                <option value="Hotel">
+
+                    Hotel
+
+                </option>
+
+                <option value="Vacation Rental">
+
+                    Vacation Rental
+
+                </option>
+
+                <option value="Long Stay">
+
+                    Long Stay
+
+                </option>
+
+            </select>
+
+        </div>
+
+        <!-- Availability -->
+
+        <div class="col-md-6">
+
+            <label class="form-label fw-semibold">
+
+                Availability
+
+            </label>
+
+            <select
+                class="form-select"
+                name="prop_availability_status">
+
+                <option value="available">
+
+                    Available
+
+                </option>
+
+                <option value="booked">
+
+                    Booked
+
+                </option>
+
+                <option value="inactive">
+
+                    Inactive
+
+                </option>
+
+            </select>
+
+        </div>
+
+        <!-- Description -->
+
+        <div class="col-12">
+
+            <label class="form-label fw-semibold">
+
+                Description
+
+            </label>
+
+            <textarea
+                class="form-control"
+                rows="6"
+                name="prop_description"
+                required></textarea>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- PROPERTY LOCATION -->
+
+<div class="border rounded-4 p-4 mb-4">
+
+    <div class="mb-4">
+
+        <h5 class="fw-bold">
+
+            <i class="fa-solid fa-location-dot text-danger me-2"></i>
+
+            Property Location
+
+        </h5>
+
+        <p class="text-muted mb-0">
+
+            Enter the property's physical location.
+
+        </p>
+
+    </div>
+
+    <div class="row g-4">
+
+        <!-- State -->
+
+        <div class="col-md-6">
+
+            <label
+                for="prop_stateid"
+                class="form-label fw-semibold">
+
+                State
+
+            </label>
+
+           <select id="prop_stateid" name="prop_stateid" class="form-control">
+                <option value="">Select State</option>
+                {% for state in property_states %}
+                <option value="{{ state.state_id }}">
+                {{ state.state_name }}
+                </option>
+                {% endfor %}
+                </select>
+
+    </div>
+
+        <!-- LGA -->
+
+        <div class="col-md-6">
+
+            <label
+                for="prop_lgaid"
+                class="form-label fw-semibold">
+
+                Local Government Area
+
+            </label>
+
+            <select
+                class="form-select"
+                id="prop_lgaid"
+                name="prop_lgaid"
+                required>
+
+                <option value="">
+
+                    Select LGA
+
+                </option>
+
+            </select>
+
+            <div class="form-text">
+
+                Select a state first to load its Local Government Areas.
+
+            </div>
+
+        </div>
+
+        <!-- Property Address -->
+
+        <div class="col-12">
+
+            <label
+                for="prop_address"
+                class="form-label fw-semibold">
+
+                Property Address
+
+            </label>
+
+            <textarea
+                class="form-control"
+                id="prop_address"
+                name="prop_address"
+                rows="3"
+                placeholder="Enter the complete property address"
+                required></textarea>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- PROPERTY DETAILS & PRICING -->
+
+<div class="border rounded-4 p-4 mb-4">
+
+    <div class="mb-4">
+
+        <h5 class="fw-bold">
+
+            <i class="fa-solid fa-bed text-success me-2"></i>
+
+            Property Details & Pricing
+
+        </h5>
+
+        <p class="text-muted mb-0">
+
+            Enter the property's pricing, capacity and room information.
+
+        </p>
+
+    </div>
+
+    <div class="row g-4">
+
+        <!-- Price Per Night -->
+
+        <div class="col-md-6">
+
+            <label
+                class="form-label fw-semibold">
+
+                Price Per Night (₦)
+
+            </label>
+
+            <div class="input-group">
+
+                <span class="input-group-text">
+
+                    ₦
+
+                </span>
+
+                <input
+                    type="number"
+                    class="form-control"
+                    name="price_per_night"
+                    min="0"
+                    required>
+
+            </div>
+
+        </div>
+
+        <!-- Maximum Guests -->
+
+        <div class="col-md-6">
+
+            <label
+                class="form-label fw-semibold">
+
+                Maximum Guests
+
+            </label>
+
+            <input
+                type="number"
+                class="form-control"
+                name="max_guest"
+                min="1"
+                required>
+
+        </div>
+
+        <!-- Bedrooms -->
+
+        <div class="col-md-6">
+
+            <label
+                class="form-label fw-semibold">
+
+                Bedrooms
+
+            </label>
+
+            <input
+                type="number"
+                class="form-control"
+                name="bedrooms"
+                min="0"
+                required>
+
+        </div>
+
+        <!-- Bathrooms -->
+
+        <div class="col-md-6">
+
+            <label
+                class="form-label fw-semibold">
+
+                Bathrooms
+
+            </label>
+
+            <input
+                type="number"
+                class="form-control"
+                name="bathrooms"
+                min="0"
+                required>
+
+        </div>
+    </div>
+
+</div>
+
+<div class="border rounded-4 p-4 mb-4">
+
+    <div class="mb-4">
+        <h5 class="fw-bold">
+            <i class="fa-solid fa-list-check text-warning me-2"></i>
+            Property Amenities
+        </h5>
+
+        <p class="text-muted mb-0">
+            Select all amenities available in this property.
+        </p>
+    </div>
+
+    <div class="row">
+
+        {% for amenity in amenities %}
+
+        <div class="col-md-3 mb-3">
+
+            <div class="form-check">
+
+                <input
+                    class="form-check-input"
+                    type="checkbox"
+                    name="amenities"
+                    id="amenity{{ amenity.amenity_id }}"
+                    value="{{ amenity.amenity_id }}">
+
+                <label
+                    class="form-check-label"
+                    for="amenity{{ amenity.amenity_id }}">
+
+                    {{ amenity.amenity_name }}
+
+                </label>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+
+
+
+
+<!-- PROPERTY IMAGES -->
+
+<div class="border rounded-4 p-4 mb-4">
+
+    <div class="mb-4">
+
+        <h5 class="fw-bold">
+
+            <i class="fa-solid fa-images text-info me-2"></i>
+
+            Property Images
+
+        </h5>
+
+        <p class="text-muted mb-0">
+
+            Upload a featured image and additional gallery images.
+
+        </p>
+
+    </div>
+<div class="row mb-4">
+
+        <div class="col-md-6">
+
+            <label
+                for="property_images"
+                class="form-label fw-semibold">
+
+                Property Images
+
+            </label>
+
+            <input
+                type="file"
+                class="form-control"
+                id="property_images"
+                name="property_images"
+                accept="image/*"
+                multiple
+                required>
+
+            <div class="form-text">
+
+                Upload one or more high-quality images.
+                Supported formats:
+                JPG, JPEG, PNG and WEBP.
+
+            </div>
+
+        </div>
+
+        <div class="col-md-6">
+
+            <label
+                for="property_video"
+                class="form-label fw-semibold">
+
+                Property Video (Optional)
+
+            </label>
+
+            <input
+                type="file"
+                class="form-control"
+                id="property_video"
+                name="property_video"
+                accept="video/*">
+
+            <div class="form-text">
+
+                Upload a short walkthrough video if available.
+
+            </div>
+
+        </div>
+
+    </div>
+    <div class="row mt-4">
+
+        <!-- Featured Image -->
+
+        <div class="col-lg-6 my-4">
+
+            <label class="form-label fw-semibold">
+
+                Featured Image
+
+            </label>
+
+            <input
+                type="file"
+                class="form-control"
+                id="featured_image"
+                name="featured_image"
+                accept=".jpg,.jpeg,.png,.webp"
+                required>
+
+            <small class="text-muted">
+
+                This image will be used as the property's cover photo.
+
+            </small>
+
+            <div
+                id="featuredPreview"
+                class="row mt-3">
+
+            </div>
+
+        </div>
+
+        <!-- Gallery Images -->
+
+        <div class="col-lg-6 my-4">
+
+            <label class="form-label fw-semibold">
+
+                Gallery Images
+
+            </label>
+
+            <input
+                type="file"
+                class="form-control"
+                id="property_images"
+                name="property_images"
+                accept=".jpg,.jpeg,.png,.webp"
+                multiple>
+
+            <small class="text-muted">
+
+                You can select multiple images.
+
+            </small>
+
+            <div
+                id="galleryPreview"
+                class="row mt-3">
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<div class="border rounded-4 p-4 mb-4">
+
+    <div class="mb-4">
+
+        <h5 class="fw-bold">
+
+            <i class="fa-solid fa-sliders text-primary me-2"></i>
+
+            Policies & Publishing
+
+        </h5>
+
+        <p class="text-muted mb-0">
+
+            Configure booking rules and publishing options.
+
+        </p>
+
+    </div>
+
+    <div class="row g-4">
+
+        <!-- Minimum Stay -->
+
+        <div class="col-md-4">
+
+            <label class="form-label fw-semibold">
+
+                Minimum Stay (Nights)
+
+            </label>
+
+            <input
+                type="number"
+                class="form-control"
+                name="minimum_stay"
+                min="1"
+                value="1"
+                required>
+
+        </div>
+
+        <!-- Maximum Stay -->
+
+        <div class="col-md-4">
+
+            <label class="form-label fw-semibold">
+
+                Maximum Stay (Nights)
+
+            </label>
+
+            <input
+                type="number"
+                class="form-control"
+                name="maximum_stay"
+                min="1"
+                value="30">
+
+        </div>
+
+        <!-- Booking Notice -->
+
+        <div class="col-md-4">
+
+            <label class="form-label fw-semibold">
+
+                Advance Booking Notice (Hours)
+
+            </label>
+
+            <input
+                type="number"
+                class="form-control"
+                name="booking_notice"
+                min="0"
+                value="0">
+
+        </div>
+
+        <!-- House Rules -->
+
+        <div class="col-12">
+
+            <label class="form-label fw-semibold">
+
+                House Rules
+
+            </label>
+
+            <textarea
+                class="form-control"
+                rows="5"
+                name="house_rules"
+                placeholder="Example:
+• No smoking
+• No pets
+• No loud parties after 10PM"></textarea>
+
+        </div>
+
+        <!-- Cancellation Policy -->
+
+        <div class="col-12">
+
+            <label class="form-label fw-semibold">
+
+                Cancellation Policy
+
+            </label>
+
+            <select
+                class="form-select"
+                name="cancellation_policy">
+
+                <option value="Flexible">
+
+                    Flexible
+
+                </option>
+
+                <option value="Moderate">
+
+                    Moderate
+
+                </option>
+
+                <option value="Strict">
+
+                    Strict
+
+                </option>
+
+            </select>
+
+        </div>
+
+    </div>
+
+    <hr class="my-5">
+
+    <!-- Property Settings -->
+
+    <h5 class="fw-bold mb-4">
+
+        Property Settings
+
+    </h5>
+
+    <div class="row">
+
+        <div class="col-md-4">
+
+            <div class="form-check form-switch">
+
+                <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="featured_property"
+                    name="featured_property">
+
+                <label
+                    class="form-check-label"
+                    for="featured_property">
+
+                    Featured Property
+
+                </label>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-4">
+
+            <div class="form-check form-switch">
+
+                <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="instant_booking"
+                    name="instant_booking">
+
+                <label
+                    class="form-check-label"
+                    for="instant_booking">
+
+                    Enable Instant Booking
+
+                </label>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-4">
+
+            <div class="form-check form-switch">
+
+                <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="publish_now"
+                    name="publish_now"
+                    checked>
+
+                <label
+                    class="form-check-label"
+                    for="publish_now">
+
+                    Publish Immediately
+
+                </label>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<div class="card border-0 shadow-sm rounded-4 mb-4">
+
+    <div class="card-body">
+
+        <div class="form-check">
+
+            <input
+                class="form-check-input"
+                type="checkbox"
+                id="confirm_information"
+                required>
+
+            <label
+                class="form-check-label"
+                for="confirm_information">
+
+                I confirm that all information entered above is correct.
+
+            </label>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <a
+        href="{{ url_for('add_property') }}"
+        class="btn btn-outline-secondary rounded-pill px-4">
+
+        <i class="fa-solid fa-arrow-left me-2"></i>
+
+        Cancel
+
+    </a>
+
+    <div>
+
+        <button
+            type="reset"
+            class="btn btn-outline-warning rounded-pill px-4 me-2">
+
+            <i class="fa-solid fa-rotate-left me-2"></i>
+
+            Reset Form
+
+        </button>
+
+        <button
+            type="submit"
+            id="savePropertyBtn"
+            class="btn btn-primary rounded-pill px-5">
+
+            <i class="fa-solid fa-floppy-disk me-2"></i>
+
+            Save Property
+
+        </button>
+
+    </div>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+{% endblock %}
+
+{% block customjs %}
+    <script>
+        $(document).ready(function(){
+            $('#addPropertyForm').submit(function(e){
+                e.preventDefault()
+            let form = document.getElementById('addPropertyForm');
+            let formData = new FormData(form);
+            $('#savePropertyBtn').prop("disabled", true).html(
+                `<span class='spinner-border spinner-border-sm mb-3'></span>
+                    <img src="/static/images/loading.gif" atl="spinner" width="50" >
+                `);
+                $.ajax({
+                    url: "{{url_for('save_property')}}",
+                    type: 'POST',
+                    data: formData,
+                    cache: false,
+                    processData: false,
+                    contentType: false,
+                    success: function(response){
+                        if (response.status === "success"){
+                            $('#responseMessage').html(`<div class="alert alert-success">${response.message}</div>`)
+                            $('#addPropertyForm')[0].reset();
+                            $("#featuredPreview").html("");
+                            $("#gallerypreview").html("")
+                        }
+                        else{
+                            $('#responseMessage').html(`<div class="alert alert-danger">${response.message}</div>`)
+                        }
+                    },
+                    error: function(xhr){
+                        let message = "Something went wrong";
+                        if (xhr.responseJSON && xhr.responseJSON.message){
+
+                        message = xhr.responseJSON.message;
+                        }
+                        $('#responseMessage').html(`<div class="alert alert-danger">${message}</div>`)
+                    },
+                    complete: function(){
+                        $('#savePropertyBtn').prop("disabled", false).html(`<i class="fa-solid fa-save me-2"></i>
+                            Save Property
+                    `);
+                    }
+                });
+            });
+            $('#prop_stateid').change(function () {
+
+            let stateID = $(this).val();
+
+            $.get('/get-lgas/' + stateID, function (response) {
+
+             let html = "<option value=''>Select Local Government</option>";
+
+            response.forEach(function (lga) {
+
+            html += `<option value="${lga.id}">
+                        ${lga.name}
+                     </option>`;
+        });
+
+        $('#prop_lgaid').html(html);
+
+    });
+
+});
+        });
+    </script>
+{% endblock %}

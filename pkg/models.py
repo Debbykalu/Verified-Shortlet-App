@@ -1,0 +1,410 @@
+from datetime import datetime
+from flask_sqlalchemy import SQLAlchemy
+
+db = SQLAlchemy()
+
+
+class User(db.Model):
+    __tablename__ = "users"
+
+    user_id = db.Column(db.Integer, primary_key=True)
+
+    user_firstname = db.Column(db.String(200), nullable=False)
+    user_lastname = db.Column(db.String(200), nullable=False)
+
+    user_email = db.Column(
+        db.String(150),
+        unique=True,
+        nullable=False
+    )
+
+    user_phoneno = db.Column(
+        db.String(50),
+        unique=True,
+        nullable=False
+    )
+
+    user_password = db.Column(
+        db.String(255),
+        nullable=False
+    )
+
+    user_profileimage = db.Column(db.String(255))
+
+    is_verified = db.Column(
+        db.Boolean,
+        default=False
+    )
+
+    user_status = db.Column(
+        db.Enum(
+            "active",
+            "inactive",
+            "suspended",
+            name="user_status"
+        ),
+        default="active"
+    )
+
+    user_role = db.Column(
+        db.Enum(
+            "customer",
+            "host",
+            "admin",
+            name="user_role"
+        ),
+        default="customer"
+    )
+
+    user_timecreated = db.Column(
+        db.DateTime,
+        default=datetime.utcnow
+    )
+
+    user_timeupdated = db.Column(
+        db.DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow
+    )
+
+    properties = db.relationship(
+        "Property",
+        backref="user",
+        lazy=True,
+        cascade="all, delete-orphan"
+    )
+
+    reviews = db.relationship(
+        "Review",
+        backref="user",
+        lazy=True,
+        cascade="all, delete-orphan"
+    )
+
+    bookings = db.relationship(
+        "Booking",
+        backref="user",
+        lazy=True,
+        cascade="all, delete-orphan"
+    )
+
+
+
+
+class Admin(db.Model):
+    __tablename__ = "admins"
+
+    admin_id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+
+    admin_firstname = db.Column(
+        db.String(200),
+        nullable=False
+    )
+
+    admin_lastname = db.Column(
+        db.String(200),
+        nullable=False
+    )
+
+    admin_email = db.Column(
+        db.String(150),
+        unique=True,
+        nullable=False
+    )
+
+    admin_password = db.Column(
+        db.String(255),
+        nullable=False
+    )
+
+
+
+class PropertyType(db.Model):
+    __tablename__ = "property_types"
+
+    prop_type_id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+
+    prop_typename = db.Column(
+        db.String(100),
+        nullable=False
+    )
+
+    properties = db.relationship(
+        "Property",
+        backref="property_type",
+        lazy=True
+    )
+
+
+class PropertyState(db.Model):
+    __tablename__ = "property_states"
+
+    state_id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+
+    state_name = db.Column(
+        db.String(100),
+        nullable=False
+    )
+
+    lgas = db.relationship(
+        "PropertyLGA",
+        backref="state",
+        lazy=True,
+        cascade="all, delete-orphan"
+    )
+
+    properties = db.relationship(
+        "Property",
+        backref="state",
+        lazy=True
+    )
+
+
+class PropertyLGA(db.Model):
+    __tablename__ = "property_lgas"
+
+    lga_id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+
+    lga_name = db.Column(
+        db.String(100),
+        nullable=False
+    )
+
+    state_id = db.Column(
+        db.Integer,
+        db.ForeignKey("property_states.state_id"),
+        nullable=False
+    )
+
+    properties = db.relationship(
+        "Property",
+        backref="lga",
+        lazy=True
+    )
+
+class Property(db.Model):
+    __tablename__ = "properties"
+
+    prop_id = db.Column(db.Integer, primary_key=True)
+
+    prop_userid = db.Column(
+        db.Integer,
+        db.ForeignKey("users.user_id"),
+        nullable=False
+    )
+
+    prop_typeid = db.Column(
+        db.Integer,
+        db.ForeignKey("property_types.prop_type_id"),
+        nullable=False
+    )
+
+    prop_stateid = db.Column(
+        db.Integer,
+        db.ForeignKey("property_states.state_id"),
+        nullable=False
+    )
+
+    prop_lgaid = db.Column(
+        db.Integer,
+        db.ForeignKey("property_lgas.lga_id"),
+        nullable=False
+    )
+
+    prop_title = db.Column(db.String(255), nullable=False)
+    prop_description = db.Column(db.Text)
+    prop_category = db.Column(db.String(100),nullable=False)
+    prop_address = db.Column(db.String(255))
+    prop_city = db.Column(db.String(150))
+
+    price_per_night = db.Column(db.Numeric(12, 2), nullable=False)
+
+    max_guest = db.Column(db.Integer)
+    bedrooms = db.Column(db.Integer)
+    bathrooms = db.Column(db.Integer)
+
+    is_verified = db.Column(db.Boolean, default=False)
+
+    prop_availability_status = db.Column(
+        db.Enum(
+            "available",
+            "booked",
+            "inactive",
+            name="availability_status"
+        ),
+        default="available"
+    )
+
+    prop_mainimage_url = db.Column(db.String(255))
+
+    images = db.relationship(
+    "PropertyImage",
+    backref="property",
+    lazy=True,
+    cascade="all, delete-orphan"
+)
+
+reviews = db.relationship(
+    "Review",
+    backref="property",
+    lazy=True,
+    cascade="all, delete-orphan"
+)
+
+bookings = db.relationship(
+    "Booking",
+    backref="property",
+    lazy=True,
+    cascade="all, delete-orphan"
+)
+
+property_amenities = db.relationship(
+    "PropertyAmenity",
+    backref="property",
+    lazy=True,
+    cascade="all, delete-orphan"
+)
+
+class Review(db.Model):
+    __tablename__ = "reviews"
+
+    review_id = db.Column(db.Integer, primary_key=True)
+
+    review_propid = db.Column(
+        db.Integer,
+        db.ForeignKey("properties.prop_id"),
+        nullable=False
+    )
+
+    review_bookingid = db.Column(
+        db.Integer,
+        db.ForeignKey("bookings.booking_id"),
+        nullable=False
+    )
+
+    review_userid = db.Column(
+        db.Integer,
+        db.ForeignKey("users.user_id"),
+        nullable=False
+    )
+
+    review_rating = db.Column(db.Integer)
+    review_comment = db.Column(db.Text)
+
+    review_time = db.Column(
+        db.DateTime,
+        default=datetime.utcnow
+    )
+
+    property = db.relationship(
+        "Property",
+        backref="reviews"
+    )
+
+
+class Amenity(db.Model):
+    __tablename__ = "amenities"
+
+    amenity_id = db.Column(db.Integer, primary_key=True)
+    amenity_name = db.Column(db.String(100), nullable=False)
+
+class PropertyAmenity(db.Model):
+    __tablename__ = "property_amenities"
+
+    property_amenity_id = db.Column(db.Integer, primary_key=True)
+
+    prop_id = db.Column(
+        db.Integer,
+        db.ForeignKey("properties.prop_id"),
+        nullable=False
+    )
+
+    amenity_id = db.Column(
+        db.Integer,
+        db.ForeignKey("amenities.amenity_id"),
+        nullable=False
+    )
+
+class Booking(db.Model):
+    __tablename__ = "bookings"
+
+    booking_id = db.Column(db.Integer, primary_key=True)
+
+    booking_userid = db.Column(
+        db.Integer,
+        db.ForeignKey("users.user_id"),
+        nullable=False
+    )
+
+    booking_propid = db.Column(
+        db.Integer,
+        db.ForeignKey("properties.prop_id"),
+        nullable=False
+    )
+
+    checkin_date = db.Column(db.Date, nullable=False)
+    checkout_date = db.Column(db.Date, nullable=False)
+
+    total_amount = db.Column(db.Numeric(12, 2), nullable=False)
+
+    booking_status = db.Column(
+        db.Enum(
+            "pending",
+            "confirmed",
+            "cancelled",
+            "completed",
+            name="booking_status"
+        ),
+        default="pending"
+    )
+
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow
+    )
+
+    updated_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow
+    )
+class PropertyImage(db.Model):
+
+    __tablename__ = "properties_images"
+
+    propimg_id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+
+    img_propid = db.Column(
+        db.Integer,
+        db.ForeignKey("properties.prop_id"),
+        nullable=False
+    )
+
+    image_url = db.Column(
+        db.String(255),
+        nullable=False
+    )
+
+    is_featured = db.Column(
+        db.Boolean,
+        default=False
+    )
+
+    uploaded_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow
+    )

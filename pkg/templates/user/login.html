@@ -1,0 +1,54 @@
+{% extends "user/layout.html" %}
+{% block main_content %}
+    <div class="container">
+          <div class="container py-5 flex-grow-1 d-flex align-items-center justify-content-center">
+        <div class="row w-100 justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card border-0 shadow-sm animate__animated animate__zoomIn">
+                    <div class="card-body p-4 p-md-5">
+                        <div class="text-center mb-4">
+                            <i class="bi bi-person-plus fs-1 text-custom-primary"></i>
+                            <h2 class="mt-2 mb-1">Login</h2>
+                            <p class="text-muted">Access affordable properties around the world</p>
+                        </div>
+                         {% include 'user/alert.html' %}
+                        <form action="{{url_for('login')}}" method="post">
+                            {{ form.hidden_tag() }}
+
+                            <div class="mb-3">
+                                {{ form.email.label(class="form-label fw-bold") }}
+                                    {{ form.email(class="form-control form-control-lg" , placeholder="chidi@example.com") }}
+                                    {% for e in form.email.errors %}
+                                        <span class="text-danger">{{e}}</span>
+                                {%endfor%}
+                            </div>
+
+                            <div class="mb-4">
+                                    {{ form.password.label(class="form-label fw-bold") }}
+                                    {{ form.password(class="form-control form-control-lg" , placeholder="••••••••") }}
+                                    {% for e in form.password.errors %}
+                                        <span class="text-danger">{{e}}</span>
+                                    {%endfor%}
+                                
+                               
+                            </div>
+                            <div class="mb-4 form-check">
+                                <input type="checkbox" class="form-check-input" id="termsCheck" required>
+                                <label class="form-check-label text-muted" for="termsCheck">I agree to the <a href="#" class="text-decoration-none">Terms of Service</a> and <a href="#" class="text-decoration-none">Privacy Policy</a>.</label>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="submit" class="custom-btn custom-btn-lg custom-btn-primary">Login</button>
+                            </div>
+                        </form>
+      		</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+{% endblock %}
+
+{% block customjs %}
+
+{% endblock %}

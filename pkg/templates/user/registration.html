@@ -1,0 +1,106 @@
+{% extends "user/layout.html" %}
+{% block main_content %}
+      <div class="container py-5 flex-grow-1 d-flex align-items-center justify-content-center">
+        <div class="row w-100 justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card border-0 shadow-sm animate__animated animate__zoomIn">
+                    <div class="card-body p-4 p-md-5">
+                        <div class="text-center mb-4">
+                            <i class="bi bi-person-plus fs-1 text-custom-primary"></i>
+                            <h2 class="mt-2 mb-1">Create an Account</h2>
+                            <p class="text-muted">Access variety of verified apartment</p>
+                        </div>
+                        {% include 'user/alert.html' %}
+                        <form action="{{url_for('register')}}" method="post" novalidate>
+                            {{ register.hidden_tag() }}
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    {{ register.firstname.label(class="form-label fw-bold") }}
+                                    {{ register.firstname(class="form-control form-control-lg" , placeholder="First name") }}
+                                    {% for e in register.firstname.errors %}
+                                        <span class="text-danger">{{e}}</span>
+                                    {%endfor%}
+                                    
+                                </div>
+                         
+                                <div class="col-md-6">
+                                    {{ register.lastname.label(class="form-label fw-bold") }}
+                                    {{ register.lastname(class="form-control form-control-lg" , placeholder="Last name") }}
+                                    {% for e in register.lastname.errors %}
+                                        <span class="text-danger">{{e}}</span>
+                                    {%endfor%}
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                {{ register.email.label(class="form-label fw-bold") }}
+                                    {{ register.email(class="form-control form-control-lg" , placeholder="example@example.com") }}
+                                    {% for e in register.email.errors %}
+                                        <span class="text-danger">{{e}}</span>
+                                {%endfor%}
+                            </div>
+                            
+                            <div class="mb-3">
+                               {{ register.phone.label(class="form-label fw-bold") }}
+                                    {{ register.phone(class="form-control form-control-lg" , placeholder="+234 803 000 0000") }}
+                                    {% for e in register.phone.errors %}
+                                        <span class="text-danger">{{e}}</span>
+                                {%endfor%}
+                            </div>
+                            
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    {{ register.password.label(class="form-label fw-bold") }}
+                                    {{ register.password(class="form-control form-control-lg" , placeholder="••••••••") }}
+                                    {% for e in register.password.errors %}
+                                        <span class="text-danger">{{e}}</span>
+                                    {%endfor%}
+                                </div>
+                                <div class="col-md-6">
+                                    {{ register.confirm_pass.label(class="form-label fw-bold") }}
+                                    {{ register.confirm_pass(class="form-control form-control-lg" , placeholder="••••••••") }}
+                                    {% for e in register.confirm_pass.errors %}
+                                        <span class="text-danger">{{e}}</span>
+                                    {%endfor%}
+                                </div>
+                            </div>
+                             <div class="row mb-4">
+                                <div class="col-md-12">
+                                    {{ register.role.label(class="form-label") }}
+                                    {{ register.role(class="form-select") }}
+                                    {% for e in register.role.errors %}
+                                    <span class="text-danger">{{e}}</span>
+                                     {%endfor%}
+                                </div>
+                            </div>
+                            <div class="mb-4 form-check">
+                                <input type="checkbox" class="form-check-input" id="termsCheck" required>
+                                <label class="form-check-label text-muted" for="termsCheck">I agree to the <a href="#" class="text-decoration-none">Terms of Service</a> and <a href="#" class="text-decoration-none">Privacy Policy</a>.</label>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="submit" class="custom-btn custom-btn-lg custom-btn-primary">Create 				Account</button>
+                            </div> 
+                             <div class="my-4 form-check text-center">
+                                <label class="form-check-label text-muted" for="termsCheck"> Already Register?<a href="/login/" class="text-decoration-none">Login</a></label>
+                            </div>
+                        </form>
+      		        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block customjs %}
+   <script>
+        $(document).ready(function(){
+            $('#email').change(function(){
+                var email = $(this).val()
+                var dataForm = "email=" +email
+                $('#feedback').load('/check/email/',dataForm);
+            })
+        })
+    </script>
+{% endblock %}
+
+                       

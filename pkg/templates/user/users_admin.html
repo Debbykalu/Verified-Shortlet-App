@@ -1,0 +1,472 @@
+{% extends "user/layout.html" %}
+{% block main_content %}
+    <div class="container-fluid admin-dash">
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="sidebar">
+                 <div class="logo">
+                     <a href="index.html" class="text-decoration-none text-light">
+                        DebKits Shortlet
+                     </a>
+                 </div>
+                 <ul class="sidebar-menu">
+                    <li>
+                        <a href="#" class="tab-link active" data-tab="dashboard">
+                            <i class="fa-solid fa-house"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a href="#" class="tab-link" data-tab="owner">
+                            <i class="fa-solid fa-user"></i>
+                            Become Owner
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a href="#" class="tab-link" data-tab="bookings">
+                            <i class="fa-solid fa-calendar-check"></i>
+                            My Bookings
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a href="#" class="tab-link" data-tab="saved">
+                            <i class="fa-solid fa-heart"></i>
+                            Saved Properties
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a href="#" class="tab-link" data-tab="payments">
+                            <i class="fa-solid fa-wallet"></i>
+                            Payment History
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a href="#" class="tab-link" data-tab="messages">
+                            <i class="fa-solid fa-message"></i>
+                            Messages
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a href="#" class="tab-link" data-tab="profile">
+                            <i class="fa-solid fa-user"></i>
+                            Profile
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a href="#" class="tab-link" data-tab="logout">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                            Logout
+                        </a>
+                    </li>
+                </ul>
+                </div>
+            </div>
+            <div class="col-md-9">
+                <div class="tab-content main-content pe-4 py-4">
+                    <div id="dashboard" class="tab-pane active">
+                        <div class="topbar">
+                     <div class="row align-items-center">
+                         <div class="col-lg-6 mb3 mb-lg-0">
+                             <div class="search-boxx">
+                                 <input type="text" class="form-control" placeholder="search apartments, bookings...">
+                                 <i class="fa-solid fa-magnifying-glass"></i>
+                             </div>
+                         </div>
+                         <div class="col-lg-6">
+                             <div class="d-flex justify-content-lg-end align-items-center gap-3">
+                                 <button class="btn btn-light position-relative">
+                                     <i class="fa-solid fa-bell"></i>
+                                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                         3
+                                     </span>
+                                 </button>
+                                 <img src="images/user1.jpg" alt="" class="avatar">
+                                 <div>
+                                     <h5 class="mb-0">
+                                         {{deets.user_firstname}}
+                                     </h5>
+                                     <small class="text-muted">
+                                         Premium User
+                                     </small>
+                                 </div>
+                             </div>
+                         </div>
+                     </div>
+                        </div>
+                        <div class="row g-4 mb-5">
+                     <div class="col-lg-3 col-md-6">
+                 <div class="dashboard-card">
+                     <div class="dashboard-icon">
+                         <i class="fa-solid fa-calendar-check"></i>
+                     </div>
+                     <h3 class="fw-bold">
+                         12
+                     </h3>
+                     <p class="text-muted mb-0">
+                         Total Bookings
+                     </p>
+                 </div>
+                     </div>
+                     <div class="col-lg-3 col-md-6">
+                 <div class="dashboard-card">
+                     <div class="dashboard-icon">
+                         <i class="fa-solid fa-heart"></i>
+                     </div>
+                     <h3 class="fw-bold">
+                         6
+                     </h3>
+                     <p class="text-muted mb-0">
+                         Save Apartment
+                     </p>
+                 </div>
+                     </div>
+                     <div class="col-lg-3 col-md-6">
+                 <div class="dashboard-card">
+                     <div class="dashboard-icon">
+                         <i class="fa-solid fa-wallet"></i>
+                     </div>
+                     <h3 class="fw-bold">
+                         N850,700
+                     </h3>
+                     <p class="text-muted mb-0">
+                         Total Spent
+                     </p>
+                 </div>
+                     </div>
+                     <div class="col-lg-3 col-md-6">
+                 <div class="dashboard-card">
+                     <div class="dashboard-icon">
+                         <i class="fa-solid fa-star"></i>
+                     </div>
+                     <h3 class="fw-bold">
+                         VIP
+                     </h3>
+                     <p class="text-muted mb-0">
+                         Membership Status
+                     </p>
+                 </div>
+                     </div>
+                        </div>
+                    </div>
+                    <div id="owner" class="card register-card mx-auto my-5 tab-pane">
+                            <div class="card-header">
+                                <h2 class="logo-title">
+                                    Debkits Shortlet
+                                </h2>
+                                <p class="mb-0">
+                                    Become property owner
+                                </p>
+                            </div>
+                            <div id="verificatn" class="dashboard-card mb-5">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                
+                                    <div>
+                                      <h3 class="fw-bold">
+                                         Host Verification
+                                      </h3>
+                                      <p class="text-muted">
+                                          Upload required documents for admin verification
+                                      </p>
+                                    </div>
+                                </div>
+                                <div class="verification-box mb-4">
+                
+                              <strong>
+                                Verification Required:
+                              </strong>
+                              Upload valid ID card and proof of ownership before approval.
+                            </div>
+                            <form action="#">
+                              <div class="row mb-4">
+                                <div class="col-md-6">
+                                  <label class="form-label">Full Name</label>
+                                  <input type="text" class="form-control" placeholder="Enter your full name">
+                                </div>
+                                <div class="col-md-6">
+                                  <label class="form-label">Phone number</label>
+                                  <input type="text" class="form-control" placeholder="Enter your phone number">
+                                </div>
+                              </div>
+                              <div class="row mb-4">
+                                <div class="col-md-6">
+                                  <label class="form-label">Email</label>
+                                  <input type="email" class="form-control" placeholder="Enter your email">
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                  <label class="form-label">Upload government ID:</label>
+                                  <input type="file" class="form-control">
+                                </div>
+                                <div class="col-12 mb-4">
+                                  <label class="form-label">
+                                    Upload property ownership document
+                                  </label>
+                                 <input type="file" class="form-control">
+                                </div>
+                              </div>
+                                <div class="mb-4">
+                                  <button class="searchbtn">
+                                    Submit verification
+                                  </button>
+                              </div>
+                            </form>
+                           </div>
+                    </div>
+                    <div id="bookings" class="tab-pane">
+                                <div class="row g-4 mb-5 d-flex align-content-center justify-content-center mb-5">
+                        <div class="col-md-8">
+                            <h3 class="fw-bold">
+                                Active Bookings
+                            </h3>
+                            <p class="text-muted">
+                                Your current apartment reservations
+                            </p>
+                        </div>
+                     <div class="col-md-4 d-flex justify-content-lg-end align-items-center">
+                         <a href="#" class="btn searchbtn">View All</a>
+                     </div>
+                                </div>
+                                <div class="row g-4 mb-5">
+                                    <div class="col-lg-6">
+                        <div class="booking-card">
+                            <div class="position-relative">
+                                <img src="images/photo-1505693416388-ac5ce068fe85.jpg" alt="" class="img-fluid booking-image w-100">
+                                <span class="badge bg-success status-badge">
+                                    Active
+                                </span>
+                            </div>
+                            <div class="p-4">
+                                <h3 class="fw-bold">
+                                    Luxury Apartment
+                                </h3>
+                                <p class="text-muted">
+                                    Lekki Phase 1,Lagos
+                                </p>
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <small class="text-muted d-block">
+                                            Check-In
+                                        </small>
+                                        <strong>
+                                            12 May 2025
+                                        </strong>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <small class="text-muted d-block">
+                                            Check-Out
+                                        </small>
+                                        <strong>
+                                            14 May 2025
+                                        </strong>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between align-content-center">
+                                    <span class="fw-bold fs-4">
+                                        ₦135,000
+                                    </span>
+                                    <a href="#" class="btn btn-outline-primary">
+                                        View Details
+                                    </a>
+                                </div>
+                                
+                            </div>
+                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                        <div class="booking-card">
+                            <div class="position-relative">
+                                <img src="images/photo-1505693416388-ac5ce068fe85.jpg" alt="" class="img-fluid booking-image w-100">
+                                <span class="badge bg-success status-badge">
+                                    Active
+                                </span>
+                            </div>
+                            <div class="p-4">
+                                <h3 class="fw-bold">
+                                    Luxury Apartment
+                                </h3>
+                                <p class="text-muted">
+                                    Lekki Phase 1,Lagos
+                                </p>
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <small class="text-muted d-block">
+                                            Check-In
+                                        </small>
+                                        <strong>
+                                            12 May 2025
+                                        </strong>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <small class="text-muted d-block">
+                                            Check-Out
+                                        </small>
+                                        <strong>
+                                            14 May 2025
+                                        </strong>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between align-content-center">
+                                    <span class="fw-bold fs-4">
+                                        ₦135,000
+                                    </span>
+                                    <a href="#" class="btn btn-outline-primary">
+                                        View Details
+                                    </a>
+                                </div>
+                                
+                            </div>
+                            </div>
+                                    </div>
+                                </div>
+                    </div>
+                    <div id="saved" class="tab-pane">
+                            <h2>Saved Properties</h2>
+                            <p>Saved apartments appear here.</p>
+                    </div>
+                    <div id="payments" class="table-card mb-5 tab-pane">
+                            <div class="d-flex justify-content-between align-content-center mb-4">
+                                <div>
+                                    <h3 class="fw-bold">
+                                        Recent Payments
+                                    </h3>
+                                    <p class="text-muted mb-0">
+                                        Your Last Transaction
+                                    </p>
+                                </div>
+                            
+                                <button class="btn btn-outline-primary px-5">
+                                    Export
+                                </button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table align-middle">
+                                    <thead>
+                                        <tr>
+                                            <td>Booking ID</td>
+                                            <td>Property</td>
+                                            <td>Date</td>
+                                            <td>Status</td>
+                                            <td>Amount</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>#BK1024</td>
+                                            <td>Luxury Apartment</td>
+                                            <td>12 May 2025</td>
+                                            <td>
+                                                <span class="badge bg-success">
+                                                    Paid
+                                                </span>
+                                            </td>
+                                            <td>₦135,000</td>
+                                        </tr>
+                                        <tr>
+                                            <td>#BK1025</td>
+                                            <td>Modern Studio</td>
+                                            <td>22 June 2025</td>
+                                            <td>
+                                                <span class="badge bg-warning text-dark">
+                                                    Pending
+                                                </span>
+                                            </td>
+                                            <td>₦105,000</td>
+                                        </tr>
+                                        <tr>
+                                            <td>#BK1026</td>
+                                            <td>Luxury Apartment</td>
+                                            <td>12 May 2025</td>
+                                            <td>
+                                                <span class="badge bg-success">
+                                                    Paid
+                                                </span>
+                                            </td>
+                                            <td>₦135,000</td>
+                                        </tr>
+                                        <tr>
+                                            <td>#BK1027</td>
+                                            <td>Beach Apartment</td>
+                                            <td>12 May 2025</td>
+                                            <td>
+                                                <span class="badge bg-warning text-dark">
+                                                    Pending
+                                                </span>
+                                            </td>
+                                            <td>₦235,000</td>
+                                        </tr>
+                                        <tr>
+                                            <td>#BK1028</td>
+                                            <td>Beach Apartment</td>
+                                            <td>12 May 2025</td>
+                                            <td>
+                                                <span class="badge bg-danger">
+                                                    Cancelled
+                                                </span>
+                                            </td>
+                                            <td>₦235,000</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <nav aria-label="Page navigation example">
+                                    <ul class="pagination d-flex justify-content-center align-items-center">
+                                      <li class="page-item">
+                                        <a class="page-link" href="#" aria-label="Previous">
+                                          <span aria-hidden="true">&laquo;</span>
+                                        </a>
+                                      </li>
+                                      <li class="page-item"><a class="page-link active text-light" href="#">1</a></li>
+                                      <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                      <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                      <li class="page-item">
+                                        <a class="page-link" href="#" aria-label="Next">
+                                          <span aria-hidden="true">&raquo;</span>
+                                        </a>
+                                      </li>
+                                    </ul>
+                                  </nav>
+                            </div>
+                    </div>
+                    <div id="messages" class="tab-pane">
+                        <h2>Messages</h2>
+                    </div>
+                    <div id="profile" class="tab-pane">
+                        <h2>Profile</h2>
+                    </div>
+                    <div id="logout" class="tab-pane">
+                        <h2>Logout</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+    {% block customjs%}
+     <script>
+        $(document).ready(function(){
+        
+            $(".tab-link").click(function(e){
+        
+                e.preventDefault();
+        
+                $(".tab-link").removeClass("active");
+                $(".tab-pane").removeClass("active");
+        
+                $(this).addClass("active");
+        
+                let target = $(this).data("tab");
+        
+                $("#" + target).addClass("active");
+        
+            });
+        
+        });
+        </script>
+    {% endblock %}
+</body>
+</html>

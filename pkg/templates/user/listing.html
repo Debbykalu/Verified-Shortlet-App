@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Book affordable accommodation We Offer verified Booking,  Reservations, Bespoke airport transfer Packages & Much More. Book..." >
+	<meta name="robot" content="noindex, nofollow">
+	<meta name="author" content="Debby Sinkalu">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+	<link href="/static/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/fontawesome/css/all.min.css">
+	<link href="/static/main.css" rel="stylesheet">
+    <title>Verified Short-let Apartments</title>
+</head>
+<body>
+    <div class="container-fluid">
+        {% include "include/header.html" %}
+        <div class="modal fade" id="loginmodal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+          
+                <div class="modal-header">
+                  <h1 class="modal-title fs-5" id="exampleModalLabel">
+                    Login
+                  </h1>
+          
+                  <button type="button" 
+                          class="btn-close" 
+                          data-bs-dismiss="modal"
+                          aria-label="Close">
+                  </button>
+                </div>
+          
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                          <label for="Email" class="form-label">Email address</label>
+                          <input type="email" class="form-control" id="email" aria-describedby="emailHelp">
+                        </div>
+                        <div class="mb-3">
+                          <label for="Password" class="form-label">Password</label>
+                          <input type="password" class="form-control" id="pwd">
+                        </div>
+                        <div class="text-end mb-3">
+                            <a href="forgot-password.html"
+                               class="text-decoration-none text-#4fc3dc">
+                               Forgot Password?
+                            </a>
+                            <button type="button" class="btn btn-primary">Login</button>
+                          </div>
+                      </form>
+                </div>
+          
+                <div class="modal-footer">
+                    <div class="modal-footer justify-content-center">
+
+                        <p class="mb-0">
+                          New user?
+                          <a href="signup.html"
+                             class="text-decoration-none fw-bold text-#4fc3dc"
+                             data-bs-toggle="modal"
+                             data-bs-target="#signupmodal"
+                             data-bs-dismiss="modal"
+                             >
+                             Create an account
+                          </a>
+                        </p>
+                
+                      </div>
+                </div>
+          
+              </div>
+            </div>
+        </div>
+        <div class="modal fade" id="signupmodal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+          
+                <div class="modal-header">
+                  <h1 class="modal-title fs-5" id="exampleModalLabel">
+                    Create Account
+                  </h1>
+          
+                  <button type="button" 
+                          class="btn-close" 
+                          data-bs-dismiss="modal"
+                          aria-label="Close">
+                  </button>
+                </div>
+          
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="Fullname" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="fullname" aria-describedby="fullname">
+                          </div>
+                        <div class="mb-3">
+                          <label for="Email" class="form-label">Email address</label>
+                          <input type="email" class="form-control" id="email" aria-describedby="emailHelp">
+                        </div>
+                        <div class="mb-3">
+                          <label for="Password" class="form-label">Password</label>
+                          <input type="password" class="form-control" id="pwd">
+                        </div>
+                        <div class="mb-3">
+                            <label for="Confirm Password" class="form-label">Confirm Password</label>
+                            <input type="password" class="form-control" id="confirmpwd">
+                          </div>
+                        <div class="text-end mb-3">
+                            <button type="button" class="btn btn-primary">Signup</button>
+                          </div>
+                      </form>
+                </div>
+          
+                <div class="modal-footer">
+                    <div class="modal-footer justify-content-center">
+
+                        <p class="mb-0">
+                          Already a user?
+                          <a href="#"
+                             class="text-decoration-none fw-bold text-#4fc3dc"
+                             data-bs-toggle="modal"
+                            data-bs-target="#loginmodal"
+                            data-bs-dismiss="modal">
+                             Login
+                          </a>
+                        </p>
+                
+                      </div>
+                </div>
+          
+              </div>
+            </div>
+          </div>
+   <div class="container py-5">
+    <div class="top-search-bar mb-4">
+        <div class="row align-content-center search-update g-3 my-3">
+            <div class="col-md-3">
+                <label class="form-label">Location</label>
+                <input type="text" class="form-control" value="Lagos,Nigeria">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Check In</label>
+                <input type="date" class="form-control">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Check Out</label>
+                <input type="date" class="form-control">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Guest</label>
+                <select class="form-select">
+                    <option value="1">1 Guest</option>
+                    <option>2 Guest</option>
+                    <option>3 Guest</option>
+                    <option>4 Guest</option>
+                    <option>5 Guest</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button class="searchbtn w-100 mt-4">Update Search</button>
+            </div>
+        </div>
+       <div class="row">
+            <div class="col-lg-3 my-4">
+                <div class="filter-card">
+                    <h3 class="mb-4">Filter</h3>
+                    <hr>
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input">
+                        <label class="form-check-label">Verified Only</label>
+                    </div>
+                    <h4 class="mt-4">Property Type</h4>
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input">
+                        <label class="form-check-label">Apartment</label>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input">
+                        <label class="form-check-label">Studio</label>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input">
+                        <label class="form-check-label">Duplex</label>
+                    </div>
+                    <h4 class="mt-4">Bedrooms</h4>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input">
+                        <label class="form-check-label">1 Bedroom</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input">
+                        <label class="form-check-label">2 Bedrooms</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input">
+                        <label class="form-check-label">3 Bedrooms</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input">
+                        <label class="form-check-label">4 Bedrooms</label>
+                    </div>
+                    <h4 class="mt-4">Amenities</h4>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input">
+                        <label class="form-check-label">24/7 Electricity</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input">
+                        <label class="form-check-label">WIFI</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input">
+                        <label class="form-check-label">Swimming Pool</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input">
+                        <label class="form-check-label">Air Conditioning</label>
+                    </div>
+                    <button class="searchbtn w-100 mt-4">Apply Filter</button>
+                </div>
+            </div>
+            <div class="col-lg-9">
+                <div class="d-flex justify-content-between align-items-center mb-4 my-4">
+                    <h4 class="">300+ verified properties Found</h4>
+                    <select class="form-select w-auto">
+                        <option>Recommended</option>
+                        <option>Lowest Price</option>
+                        <option>Highest Price</option>
+                    </select>
+                </div>
+                <div class="row my-5">                  
+                    <div class="col-md-6">
+                        <div class="card listing-card">
+                            <div class="position-relative">
+                                <img class="img-fluid card-img-top listing-image" src="/static/images/rooms/patrick-perkins-iRiVzALa4pI-unsplash.jpg" alt="">
+                                <div class="wishlist-btn">
+                                    <i class="fa-regular fa-heart"></i>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="verified-badge">
+                                        Verified
+                                    </span>
+                                    <small>
+                                        <i class="fa-solid fa-star text-warning"></i>
+                                        <i class="fa-solid fa-star text-warning"></i>
+                                        <i class="fa-solid fa-star text-warning"></i>
+                                        <i class="fa-solid fa-star text-warning"></i>
+                                        4.9
+                                    </small>
+                                   
+                                </div>
+                                <h4 class="card-title">
+                                    Modern Studio
+                                </h4>
+                                <p class="text-muted mb-2">Ikoyi, Lagos</p>
+                                <div class="d-flex gap-3 small text-muted mb-3">
+                                    <span>
+                                        <i class="fa-solid fa-bed"></i>
+                                        1 Beds
+                                    </span>
+                                    <span>
+                                        <i class="fa-solid fa-bath"></i>
+                                        1 Beds
+                                    </span>
+                                </div>
+                                <div class="d-flex justify-content-between align-content-center">
+                                    <div>
+                                        <span class="price">
+                                            ₦35,000
+                                        </span>
+                                        <small>night</small>
+                                    </div>
+                                    <a href="/properties_details" class="searchbtn">View</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card listing-card">
+                            <div class="position-relative">
+                                <img class="img-fluid card-img-top listing-image" src="/static/images/rooms/huy-nguyen-AB-q9lwCVv8-unsplash.jpg" alt="">
+                                <div class="wishlist-btn">
+                                    <i class="fa-regular fa-heart"></i>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="verified-badge">
+                                        Verified
+                                    </span>
+                                    <small>
+                                        <i class="fa-solid fa-star text-warning"></i>
+                                        <i class="fa-solid fa-star text-warning"></i>
+                                        <i class="fa-solid fa-star text-warning"></i>
+                                        <i class="fa-solid fa-star text-warning"></i>
+                                        4.4
+                                    </small>
+                                   
+                                </div>
+                                <h4 class="card-title">
+                                    Duplex
+                                </h4>
+                                <p class="text-muted mb-2">Lekki, Lagos</p>
+                                <div class="d-flex gap-3 small text-muted mb-3">
+                                    <span>
+                                        <i class="fa-solid fa-bed"></i>
+                                        4 Beds
+                                    </span>
+                                    <span>
+                                        <i class="fa-solid fa-bath"></i>
+                                        5 Beds
+                                    </span>
+                                </div>
+                                <div class="d-flex justify-content-between align-content-center">
+                                    <div>
+                                        <span class="price">
+                                            ₦45,000
+                                        </span>
+                                        <small>night</small>
+                                    </div>
+                                    <a href="/properties_details" class="searchbtn">View</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-5">
+                    <div class="col-md-6">
+                        <div class="card listing-card">
+                            <div class="position-relative">
+                                <img class="img-fluid card-img-top listing-image" src="/static/images/rooms/brian-zajac-4LngtXlsjJs-unsplash.jpg" alt="">
+                                <div class="wishlist-btn">
+                                    <i class="fa-regular fa-heart"></i>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="verified-badge">
+                                        Verified
+                                    </span>
+                                    <small>
+                                        <i class="fa-solid fa-star text-warning"></i>
+                                        <i class="fa-solid fa-star text-warning"></i>
+                                        <i class="fa-solid fa-star text-warning"></i>
+                                        <i class="fa-solid fa-star text-warning"></i>
+                                        4.9
+                                    </small>
+                                   
+                                </div>
+                                <h4 class="card-title">
+                                    Luxury Apartment
+                                </h4>
+                                <p class="text-muted mb-2">Lekki, Lagos</p>
+                                <div class="d-flex gap-3 small text-muted mb-3">
+                                    <span>
+                                        <i class="fa-solid fa-bed"></i>
+                                        2 Beds
+                                    </span>
+                                    <span>
+                                        <i class="fa-solid fa-bath"></i>
+                                        2 Beds
+                                    </span>
+                                </div>
+                                <div class="d-flex justify-content-between align-content-center">
+                                    <div>
+                                        <span class="price">
+                                            ₦45,000
+                                        </span>
+                                        <small>night</small>
+                                    </div>
+                                    <a href="/properties_details" class="searchbtn">View</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card listing-card">
+                            <div class="position-relative">
+                                <img class="img-fluid card-img-top listing-image" src="/static/images/rooms/patrick-perkins-iRiVzALa4pI-unsplash.jpg" alt="">
+                                <div class="wishlist-btn">
+                                    <i class="fa-regular fa-heart"></i>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="verified-badge">
+                                        Verified
+                                    </span>
+                                    <small>
+                                        <i class="fa-solid fa-star text-warning"></i>
+                                        <i class="fa-solid fa-star text-warning"></i>
+                                        <i class="fa-solid fa-star text-warning"></i>
+                                        <i class="fa-solid fa-star text-warning"></i>
+                                        4.9
+                                    </small>
+                                   
+                                </div>
+                                <h4 class="card-title">
+                                    Modern Studio
+                                </h4>
+                                <p class="text-muted mb-2">Ikoyi, Lagos</p>
+                                <div class="d-flex gap-3 small text-muted mb-3">
+                                    <span>
+                                        <i class="fa-solid fa-bed"></i>
+                                        1 Beds
+                                    </span>
+                                    <span>
+                                        <i class="fa-solid fa-bath"></i>
+                                        1 Beds
+                                    </span>
+                                </div>
+                                <div class="d-flex justify-content-between align-content-center">
+                                    <div>
+                                        <span class="price">
+                                            ₦35,000
+                                        </span>
+                                        <small>night</small>
+                                    </div>
+                                    <a href="/properties_details" class="searchbtn">View</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-5">
+                    <div class="col-md-6">
+                        <div class="card listing-card">
+                            <div class="position-relative">
+                                <img class="img-fluid card-img-top listing-image" src="/static/images/rooms/brian-zajac-4LngtXlsjJs-unsplash.jpg" alt="">
+                                <div class="wishlist-btn">
+                                    <i class="fa-regular fa-heart"></i>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="verified-badge">
+                                        Verified
+                                    </span>
+                                    <small>
+                                        <i class="fa-solid fa-star text-warning"></i>
+                                        <i class="fa-solid fa-star text-warning"></i>
+                                        <i class="fa-solid fa-star text-warning"></i>
+                                        <i class="fa-solid fa-star text-warning"></i>
+                                        4.9
+                                    </small>
+                                   
+                                </div>
+                                <h4 class="card-title">
+                                    Luxury Apartment
+                                </h4>
+                                <p class="text-muted mb-2">Lekki, Lagos</p>
+                                <div class="d-flex gap-3 small text-muted mb-3">
+                                    <span>
+                                        <i class="fa-solid fa-bed"></i>
+                                        2 Beds
+                                    </span>
+                                    <span>
+                                        <i class="fa-solid fa-bath"></i>
+                                        2 Beds
+                                    </span>
+                                </div>
+                                <div class="d-flex justify-content-between align-content-center">
+                                    <div>
+                                        <span class="price">
+                                            ₦45,000
+                                        </span>
+                                        <small>night</small>
+                                    </div>
+                                    <a href="/properties_details" class="searchbtn">View</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card listing-card">
+                            <div class="position-relative">
+                                <img class="img-fluid card-img-top listing-image" src="/static/images/rooms/huy-nguyen-AB-q9lwCVv8-unsplash.jpg" alt="">
+                                <div class="wishlist-btn">
+                                    <i class="fa-regular fa-heart"></i>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="verified-badge">
+                                        Verified
+                                    </span>
+                                    <small>
+                                        <i class="fa-solid fa-star text-warning"></i>
+                                        <i class="fa-solid fa-star text-warning"></i>
+                                        <i class="fa-solid fa-star text-warning"></i>
+                                        <i class="fa-solid fa-star text-warning"></i>
+                                        4.4
+                                    </small>
+                                   
+                                </div>
+                                <h4 class="card-title">
+                                    Duplex
+                                </h4>
+                                <p class="text-muted mb-2">Lekki, Lagos</p>
+                                <div class="d-flex gap-3 small text-muted mb-3">
+                                    <span>
+                                        <i class="fa-solid fa-bed"></i>
+                                        4 Beds
+                                    </span>
+                                    <span>
+                                        <i class="fa-solid fa-bath"></i>
+                                        5 Beds
+                                    </span>
+                                </div>
+                                <div class="d-flex justify-content-between align-content-center">
+                                    <div>
+                                        <span class="price">
+                                            ₦45,000
+                                        </span>
+                                        <small>night</small>
+                                    </div>
+                                    <a href="/properties_details" class="searchbtn">View</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <nav class="mt-5">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item active">
+                            <a href="#" class="page-link">1</a>
+                        </li>
+                        <li class="page-item">
+                            <a href="#" class="page-link">2</a>
+                        </li>
+                        <li class="page-item">
+                            <a href="#" class="page-link">3</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+       </div>
+    </div>
+   </div>
+    {% include "include/footer.html" %}
+    </div>
+    <script src="/static/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
+

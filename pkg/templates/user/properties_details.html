@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Book affordable accommodation We Offer verified Booking,  Reservations, Bespoke airport transfer Packages & Much More. Book..." >
+	<meta name="robot" content="noindex, nofollow">
+	<meta name="author" content="Debby Sinkalu">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+	<link href="/static/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/fontawesome/css/all.min.css">
+	<link href="/static/main.css" rel="stylesheet">
+    <title>Verified Short-let Apartments</title>
+</head>
+<body>
+    <div class="container-fluid">
+       {% include "include/header.html" %}
+        <div class="modal fade" id="loginmodal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+          
+                <div class="modal-header">
+                  <h1 class="modal-title fs-5" id="exampleModalLabel">
+                    Login
+                  </h1>
+          
+                  <button type="button" 
+                          class="btn-close" 
+                          data-bs-dismiss="modal"
+                          aria-label="Close">
+                  </button>
+                </div>
+          
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                          <label for="Email" class="form-label">Email address</label>
+                          <input type="email" class="form-control" id="email" aria-describedby="emailHelp">
+                        </div>
+                        <div class="mb-3">
+                          <label for="Password" class="form-label">Password</label>
+                          <input type="password" class="form-control" id="pwd">
+                        </div>
+                        <div class="text-end mb-3">
+                            <a href="forgot-password.html"
+                               class="text-decoration-none text-#4fc3dc">
+                               Forgot Password?
+                            </a>
+                            <button type="button" class="btn btn-primary">Login</button>
+                          </div>
+                      </form>
+                </div>
+          
+                <div class="modal-footer">
+                    <div class="modal-footer justify-content-center">
+
+                        <p class="mb-0">
+                          New user?
+                          <a href="signup.html"
+                             class="text-decoration-none fw-bold text-#4fc3dc"
+                             data-bs-toggle="modal"
+                             data-bs-target="#signupmodal"
+                             data-bs-dismiss="modal"
+                             >
+                             Create an account
+                          </a>
+                        </p>
+                
+                      </div>
+                </div>
+          
+              </div>
+            </div>
+        </div>
+        <div class="modal fade" id="signupmodal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+          
+                <div class="modal-header">
+                  <h1 class="modal-title fs-5" id="exampleModalLabel">
+                    Create Account
+                  </h1>
+          
+                  <button type="button" 
+                          class="btn-close" 
+                          data-bs-dismiss="modal"
+                          aria-label="Close">
+                  </button>
+                </div>
+          
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="Fullname" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="fullname" aria-describedby="fullname">
+                          </div>
+                        <div class="mb-3">
+                          <label for="Email" class="form-label">Email address</label>
+                          <input type="email" class="form-control" id="email" aria-describedby="emailHelp">
+                        </div>
+                        <div class="mb-3">
+                          <label for="Password" class="form-label">Password</label>
+                          <input type="password" class="form-control" id="pwd">
+                        </div>
+                        <div class="mb-3">
+                            <label for="Confirm Password" class="form-label">Confirm Password</label>
+                            <input type="password" class="form-control" id="confirmpwd">
+                          </div>
+                        <div class="text-end mb-3">
+                            <button type="button" class="btn btn-primary">Signup</button>
+                          </div>
+                      </form>
+                </div>
+          
+                <div class="modal-footer">
+                    <div class="modal-footer justify-content-center">
+
+                        <p class="mb-0">
+                          Already a user?
+                          <a href="#"
+                             class="text-decoration-none fw-bold text-#4fc3dc"
+                             data-bs-toggle="modal"
+                            data-bs-target="#loginmodal"
+                            data-bs-dismiss="modal">
+                             Login
+                          </a>
+                        </p>
+                
+                      </div>
+                </div>
+          
+              </div>
+            </div>
+          </div>
+   <div class="container py-5">
+        <div class="mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="fw-bold">Luxury 2 Bedrooms Apartment</h2>
+                    <p class="text-muted">Lekki Phase 1, Lagos</p>
+                </div>
+                <div>
+                    <span class="verified-badge">Verified</span>
+                </div>
+            </div>
+        </div>
+    <div class="row">
+        <div class="col-lg-8">
+                <img class="img-fluid gallery-main w-100 mb-3" src="/static/images/rooms/dada_design-9KGB4HspwsM-unsplash.jpg"  alt="">
+                <div class="row g-3 mb-5">
+                    <div class="col-md-4">
+                        <img class="img-fluid gallery-thumb w-100" src="/static/images/photo-1494526585095-c41746248156.jpg" alt="">
+                    </div>
+                    <div class="col-md-4">
+                        <img class="img-fluid gallery-thumb w-100" src="/static/images/photo-1484154218962-a197022b5858.jpg" alt="">
+                    </div>
+                    <div class="col-md-4">
+                        <img class="img-fluid gallery-thumb w-100" src="/static/images/photo-1505693416388-ac5ce068fe85.jpg" alt="">
+                    </div>
+                </div>
+                <div class="bg-white p-4 rounded-4 shadow-sm mb-5">
+                    <h4>About this Apartment</h4>
+                    <p class="text-muted">Beautiful fully furnished apartment located in Lekki.
+                        Includes fast WiFi, Netflix, swimming pool,
+                        24/7 electricity and security.</p>
+                </div>
+            <div class="row my-5">
+                <h4>Amenities</h4>
+                <div class="col-md-3">
+                    <div class="amenities-box">
+                        <i class="fa-solid fa-wifi mb-2"></i>
+                        <p class="mb-0">WIFI</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="amenities-box">
+                        <i class="fa-solid fa-water-ladder mb-3"></i>
+                        <p class="mb-0">Pool</p>
+                    </div>
+                </div>
+               <div class="col-md-3">
+                  <div class="amenities-box">
+                      <i class="fa-solid fa-car mb-3"></i>
+                      <p class="mb-0">Parking</p>
+                  </div>
+               </div>
+               <div class="col-md-3">
+                    <div class="amenities-box">
+                        <i class="fa-solid fa-snowflake mb-3"></i>
+                        <p class="mb-0">Air Conditioning</p>
+                    </div>
+               </div>
+            </div>
+                <div class="host-box">
+                <div  class="d-flex align-items-center">
+                    <img src="/static/images/randomuser.jpg" alt="" width="70" height="70" class="rounded-circle me-3">
+                </div>
+                <h3 class="mb-1">Hosted by Emmanuel</h3>
+                <small class="text-muted">
+                 Supper .  Verified
+                </small>
+                </div>
+       </div>
+       <div class="col-lg-4">
+        <div class="booking-card">
+          <h3 class="fw-bold mb-3">
+            ₦45,000
+            <small class="fs-6 text-muted">
+              /night
+            </small>
+          </h3>
+          <div class="mb-3">
+            <label class="form-label">
+              Check In
+            </label>
+            <input type="date"
+            class="form-control">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">
+              Check Out
+            </label>
+            <input type="date"
+            class="form-control">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">
+              Guests
+            </label>
+            <select class="form-select">
+              <option>2 Guests</option>
+              <option>4 Guests</option>
+            </select>
+          </div>
+          <a href="/booking"
+          class="searchbtn w-100 btn-lg">
+            Reserve Now
+          </a>
+          <hr>
+          <div class="d-flex justify-content-between">
+            <span>
+              ₦45,000 × 2 nights
+            </span>
+            <span>
+              ₦90,000
+            </span>
+          </div>
+          <div class="d-flex justify-content-between mt-2">
+            <span>
+              Service Fee
+            </span>
+            <span>
+              ₦5,000
+            </span>
+          </div>
+          <hr>
+          <div class="d-flex justify-content-between fw-bold">
+            <span>Total</span>
+            <span>₦95,000</span>
+          </div>
+        </div>
+      </div>
+   </div>
+  </div>
+   </div>
+    {% include "include/footer.html" %}
+    </div>
+    <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
+
