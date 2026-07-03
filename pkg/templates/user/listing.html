@@ -1,22 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Book affordable accommodation We Offer verified Booking,  Reservations, Bespoke airport transfer Packages & Much More. Book..." >
-	<meta name="robot" content="noindex, nofollow">
-	<meta name="author" content="Debby Sinkalu">
-	<link rel="preconnect" href="https://fonts.googleapis.com">
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-	<link href="/static/bootstrap/css/bootstrap.css" rel="stylesheet">
-    <link rel="stylesheet" href="/static/fontawesome/css/all.min.css">
-	<link href="/static/main.css" rel="stylesheet">
-    <title>Verified Short-let Apartments</title>
-</head>
-<body>
-    <div class="container-fluid">
-        {% include "include/header.html" %}
+
+        {% extends "user/layout.html" %}
+        {% block main_content %}
         <div class="modal fade" id="loginmodal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog">
               <div class="modal-content">
@@ -136,416 +120,146 @@
           </div>
    <div class="container py-5">
     <div class="top-search-bar mb-4">
-        <div class="row align-content-center search-update g-3 my-3">
+        <form id="searchForm" class="row align-content-center search-update g-3 my-3" method="get" action="{{ url_for('listing') }}">
             <div class="col-md-3">
                 <label class="form-label">Location</label>
-                <input type="text" class="form-control" value="Lagos,Nigeria">
+                <input name="location" type="text" class="form-control" value="{{ search_values.location if search_values else '' }}" placeholder="City, state, or landmark">
             </div>
             <div class="col-md-2">
                 <label class="form-label">Check In</label>
-                <input type="date" class="form-control">
+                <input name="checkin_date" type="date" class="form-control" value="{{ search_values.checkin_date if search_values else '' }}">
             </div>
             <div class="col-md-2">
                 <label class="form-label">Check Out</label>
-                <input type="date" class="form-control">
+                <input name="checkout_date" type="date" class="form-control" value="{{ search_values.checkout_date if search_values else '' }}">
             </div>
             <div class="col-md-2">
                 <label class="form-label">Guest</label>
-                <select class="form-select">
-                    <option value="1">1 Guest</option>
-                    <option>2 Guest</option>
-                    <option>3 Guest</option>
-                    <option>4 Guest</option>
-                    <option>5 Guest</option>
+                <select name="guests" class="form-select">
+                    {% for guest_count in range(1, 6) %}
+                        <option value="{{ guest_count }}" {% if search_values and search_values.guests == guest_count|string %}selected{% endif %}>{{ guest_count }} Guest{{ '' if guest_count == 1 else 's' }}</option>
+                    {% endfor %}
                 </select>
             </div>
             <div class="col-md-3">
-                <button class="searchbtn w-100 mt-4">Update Search</button>
+                <button type="submit" class="searchbtn w-100 mt-4">Update Search</button>
             </div>
-        </div>
-       <div class="row">
+        <div class="row">
             <div class="col-lg-3 my-4">
                 <div class="filter-card">
                     <h3 class="mb-4">Filter</h3>
                     <hr>
                     <div class="form-check mb-3">
-                        <input type="checkbox" class="form-check-input">
-                        <label class="form-check-label">Verified Only</label>
+                        <input id="verified_only" name="verified_only" type="checkbox" value="1" class="form-check-input" {% if search_values and search_values.verified_only %}checked{% endif %}>
+                        <label class="form-check-label" for="verified_only">Verified Only</label>
                     </div>
-                    <h4 class="mt-4">Property Type</h4>
-                    <div class="form-check mb-3">
-                        <input type="checkbox" class="form-check-input">
-                        <label class="form-check-label">Apartment</label>
+                    <div class="mb-3">
+                        <label class="form-label">Property Type</label>
+                        <select name="property_type" class="form-select">
+                            <option value="">Any</option>
+                            {% for type_name in search_meta.property_types %}
+                                <option value="{{ type_name }}" {% if search_values and search_values.property_type == type_name %}selected{% endif %}>{{ type_name }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
-                    <div class="form-check mb-3">
-                        <input type="checkbox" class="form-check-input">
-                        <label class="form-check-label">Studio</label>
+                    <div class="mb-3">
+                        <label class="form-label">Bedrooms</label>
+                        <select name="min_bedrooms" class="form-select">
+                            <option value="">Any</option>
+                            {% for bedroom in search_meta.bedrooms %}
+                                <option value="{{ bedroom }}" {% if search_values and search_values.min_bedrooms == bedroom|string %}selected{% endif %}>{{ bedroom }}+</option>
+                            {% endfor %}
+                        </select>
                     </div>
-                    <div class="form-check mb-3">
-                        <input type="checkbox" class="form-check-input">
-                        <label class="form-check-label">Duplex</label>
-                    </div>
-                    <h4 class="mt-4">Bedrooms</h4>
-                    <div class="form-check">
-                        <input type="checkbox" class="form-check-input">
-                        <label class="form-check-label">1 Bedroom</label>
-                    </div>
-                    <div class="form-check">
-                        <input type="checkbox" class="form-check-input">
-                        <label class="form-check-label">2 Bedrooms</label>
-                    </div>
-                    <div class="form-check">
-                        <input type="checkbox" class="form-check-input">
-                        <label class="form-check-label">3 Bedrooms</label>
-                    </div>
-                    <div class="form-check">
-                        <input type="checkbox" class="form-check-input">
-                        <label class="form-check-label">4 Bedrooms</label>
-                    </div>
-                    <h4 class="mt-4">Amenities</h4>
-                    <div class="form-check">
-                        <input type="checkbox" class="form-check-input">
-                        <label class="form-check-label">24/7 Electricity</label>
-                    </div>
-                    <div class="form-check">
-                        <input type="checkbox" class="form-check-input">
-                        <label class="form-check-label">WIFI</label>
-                    </div>
-                    <div class="form-check">
-                        <input type="checkbox" class="form-check-input">
-                        <label class="form-check-label">Swimming Pool</label>
-                    </div>
-                    <div class="form-check">
-                        <input type="checkbox" class="form-check-input">
-                        <label class="form-check-label">Air Conditioning</label>
-                    </div>
-                    <button class="searchbtn w-100 mt-4">Apply Filter</button>
+                    <button type="submit" class="searchbtn w-100 mt-4">Apply Filter</button>
                 </div>
             </div>
             <div class="col-lg-9">
                 <div class="d-flex justify-content-between align-items-center mb-4 my-4">
-                    <h4 class="">300+ verified properties Found</h4>
-                    <select class="form-select w-auto">
-                        <option>Recommended</option>
-                        <option>Lowest Price</option>
-                        <option>Highest Price</option>
-                    </select>
-                </div>
-                <div class="row my-5">                  
-                    <div class="col-md-6">
-                        <div class="card listing-card">
-                            <div class="position-relative">
-                                <img class="img-fluid card-img-top listing-image" src="/static/images/rooms/patrick-perkins-iRiVzALa4pI-unsplash.jpg" alt="">
-                                <div class="wishlist-btn">
-                                    <i class="fa-regular fa-heart"></i>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="verified-badge">
-                                        Verified
-                                    </span>
-                                    <small>
-                                        <i class="fa-solid fa-star text-warning"></i>
-                                        <i class="fa-solid fa-star text-warning"></i>
-                                        <i class="fa-solid fa-star text-warning"></i>
-                                        <i class="fa-solid fa-star text-warning"></i>
-                                        4.9
-                                    </small>
-                                   
-                                </div>
-                                <h4 class="card-title">
-                                    Modern Studio
-                                </h4>
-                                <p class="text-muted mb-2">Ikoyi, Lagos</p>
-                                <div class="d-flex gap-3 small text-muted mb-3">
-                                    <span>
-                                        <i class="fa-solid fa-bed"></i>
-                                        1 Beds
-                                    </span>
-                                    <span>
-                                        <i class="fa-solid fa-bath"></i>
-                                        1 Beds
-                                    </span>
-                                </div>
-                                <div class="d-flex justify-content-between align-content-center">
-                                    <div>
-                                        <span class="price">
-                                            ₦35,000
-                                        </span>
-                                        <small>night</small>
-                                    </div>
-                                    <a href="/properties_details" class="searchbtn">View</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card listing-card">
-                            <div class="position-relative">
-                                <img class="img-fluid card-img-top listing-image" src="/static/images/rooms/huy-nguyen-AB-q9lwCVv8-unsplash.jpg" alt="">
-                                <div class="wishlist-btn">
-                                    <i class="fa-regular fa-heart"></i>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="verified-badge">
-                                        Verified
-                                    </span>
-                                    <small>
-                                        <i class="fa-solid fa-star text-warning"></i>
-                                        <i class="fa-solid fa-star text-warning"></i>
-                                        <i class="fa-solid fa-star text-warning"></i>
-                                        <i class="fa-solid fa-star text-warning"></i>
-                                        4.4
-                                    </small>
-                                   
-                                </div>
-                                <h4 class="card-title">
-                                    Duplex
-                                </h4>
-                                <p class="text-muted mb-2">Lekki, Lagos</p>
-                                <div class="d-flex gap-3 small text-muted mb-3">
-                                    <span>
-                                        <i class="fa-solid fa-bed"></i>
-                                        4 Beds
-                                    </span>
-                                    <span>
-                                        <i class="fa-solid fa-bath"></i>
-                                        5 Beds
-                                    </span>
-                                </div>
-                                <div class="d-flex justify-content-between align-content-center">
-                                    <div>
-                                        <span class="price">
-                                            ₦45,000
-                                        </span>
-                                        <small>night</small>
-                                    </div>
-                                    <a href="/properties_details" class="searchbtn">View</a>
-                                </div>
-                            </div>
-                        </div>
+                    <h4 class="mb-0">{{ total_results if total_results is not none else 0 }} properties found</h4>
+                    <div class="d-flex align-items-center gap-3">
+                        <label class="mb-0 small text-muted">Sort by</label>
+                        <select name="sort_by" id="sortBy" class="form-select w-auto">
+                            {% for option in search_meta.sort_options %}
+                                <option value="{{ option.key }}" {% if search_values and search_values.sort_by == option.key %}selected{% endif %}>{{ option.label }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                 </div>
-                <div class="row mt-5">
-                    <div class="col-md-6">
-                        <div class="card listing-card">
-                            <div class="position-relative">
-                                <img class="img-fluid card-img-top listing-image" src="/static/images/rooms/brian-zajac-4LngtXlsjJs-unsplash.jpg" alt="">
-                                <div class="wishlist-btn">
-                                    <i class="fa-regular fa-heart"></i>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="verified-badge">
-                                        Verified
-                                    </span>
-                                    <small>
-                                        <i class="fa-solid fa-star text-warning"></i>
-                                        <i class="fa-solid fa-star text-warning"></i>
-                                        <i class="fa-solid fa-star text-warning"></i>
-                                        <i class="fa-solid fa-star text-warning"></i>
-                                        4.9
-                                    </small>
-                                   
-                                </div>
-                                <h4 class="card-title">
-                                    Luxury Apartment
-                                </h4>
-                                <p class="text-muted mb-2">Lekki, Lagos</p>
-                                <div class="d-flex gap-3 small text-muted mb-3">
-                                    <span>
-                                        <i class="fa-solid fa-bed"></i>
-                                        2 Beds
-                                    </span>
-                                    <span>
-                                        <i class="fa-solid fa-bath"></i>
-                                        2 Beds
-                                    </span>
-                                </div>
-                                <div class="d-flex justify-content-between align-content-center">
-                                    <div>
-                                        <span class="price">
-                                            ₦45,000
-                                        </span>
-                                        <small>night</small>
+                <div class="row my-5" id="listingResults">
+                    {% if properties %}
+                        {% for prop in properties %}
+                            <div class="col-md-6 mb-4">
+                                <div class="card listing-card h-100">
+                                    <div class="position-relative">
+                                        <img class="img-fluid card-img-top listing-image" src="{{ prop.prop_mainimage_url or '/static/images/rooms/patrick-perkins-iRiVzALa4pI-unsplash.jpg' }}" alt="{{ prop.prop_title }}">
+                                        <div class="wishlist-btn">
+                                            <i class="fa-regular fa-heart"></i>
+                                        </div>
                                     </div>
-                                    <a href="/properties_details" class="searchbtn">View</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card listing-card">
-                            <div class="position-relative">
-                                <img class="img-fluid card-img-top listing-image" src="/static/images/rooms/patrick-perkins-iRiVzALa4pI-unsplash.jpg" alt="">
-                                <div class="wishlist-btn">
-                                    <i class="fa-regular fa-heart"></i>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="verified-badge">
-                                        Verified
-                                    </span>
-                                    <small>
-                                        <i class="fa-solid fa-star text-warning"></i>
-                                        <i class="fa-solid fa-star text-warning"></i>
-                                        <i class="fa-solid fa-star text-warning"></i>
-                                        <i class="fa-solid fa-star text-warning"></i>
-                                        4.9
-                                    </small>
-                                   
-                                </div>
-                                <h4 class="card-title">
-                                    Modern Studio
-                                </h4>
-                                <p class="text-muted mb-2">Ikoyi, Lagos</p>
-                                <div class="d-flex gap-3 small text-muted mb-3">
-                                    <span>
-                                        <i class="fa-solid fa-bed"></i>
-                                        1 Beds
-                                    </span>
-                                    <span>
-                                        <i class="fa-solid fa-bath"></i>
-                                        1 Beds
-                                    </span>
-                                </div>
-                                <div class="d-flex justify-content-between align-content-center">
-                                    <div>
-                                        <span class="price">
-                                            ₦35,000
-                                        </span>
-                                        <small>night</small>
+                                    <div class="card-body d-flex flex-column">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            {% if prop.is_verified %}
+                                                <span class="verified-badge">Verified</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Pending</span>
+                                            {% endif %}
+                                            <small class="text-muted">
+                                                <i class="fa-solid fa-star text-warning"></i>
+                                                <i class="fa-solid fa-star text-warning"></i>
+                                                <i class="fa-solid fa-star text-warning"></i>
+                                                <i class="fa-solid fa-star text-warning"></i>
+                                                4.8
+                                            </small>
+                                        </div>
+                                        <h4 class="card-title">{{ prop.prop_title }}</h4>
+                                        <p class="text-muted mb-2">{{ prop.prop_city or prop.prop_address or prop.prop_category }}, {{ prop.state or '' }}</p>
+                                        <div class="d-flex gap-3 small text-muted mb-3">
+                                            <span><i class="fa-solid fa-bed"></i> {{ prop.bedrooms or 0 }} Beds</span>
+                                            <span><i class="fa-solid fa-bath"></i> {{ prop.bathrooms or 0 }} Baths</span>
+                                            <span><i class="fa-solid fa-user"></i> {{ prop.max_guest or 1 }} Guests</span>
+                                        </div>
+                                        <div class="mt-auto d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <span class="price">₦{{ '{:,.0f}'.format(prop.price_per_night) if prop.price_per_night else '0' }}</span>
+                                                <small>night</small>
+                                            </div>
+                                            <a href="{{ url_for('properties_details') }}?prop_id={{ prop.prop_id }}" class="searchbtn">View</a>
+                                        </div>
                                     </div>
-                                    <a href="/properties_details" class="searchbtn">View</a>
                                 </div>
                             </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="col-12">
+                            <div class="alert alert-info">No properties match your search. Change your dates, location, or guest count and try again.</div>
                         </div>
-                    </div>
-                </div>
-                <div class="row mt-5">
-                    <div class="col-md-6">
-                        <div class="card listing-card">
-                            <div class="position-relative">
-                                <img class="img-fluid card-img-top listing-image" src="/static/images/rooms/brian-zajac-4LngtXlsjJs-unsplash.jpg" alt="">
-                                <div class="wishlist-btn">
-                                    <i class="fa-regular fa-heart"></i>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="verified-badge">
-                                        Verified
-                                    </span>
-                                    <small>
-                                        <i class="fa-solid fa-star text-warning"></i>
-                                        <i class="fa-solid fa-star text-warning"></i>
-                                        <i class="fa-solid fa-star text-warning"></i>
-                                        <i class="fa-solid fa-star text-warning"></i>
-                                        4.9
-                                    </small>
-                                   
-                                </div>
-                                <h4 class="card-title">
-                                    Luxury Apartment
-                                </h4>
-                                <p class="text-muted mb-2">Lekki, Lagos</p>
-                                <div class="d-flex gap-3 small text-muted mb-3">
-                                    <span>
-                                        <i class="fa-solid fa-bed"></i>
-                                        2 Beds
-                                    </span>
-                                    <span>
-                                        <i class="fa-solid fa-bath"></i>
-                                        2 Beds
-                                    </span>
-                                </div>
-                                <div class="d-flex justify-content-between align-content-center">
-                                    <div>
-                                        <span class="price">
-                                            ₦45,000
-                                        </span>
-                                        <small>night</small>
-                                    </div>
-                                    <a href="/properties_details" class="searchbtn">View</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card listing-card">
-                            <div class="position-relative">
-                                <img class="img-fluid card-img-top listing-image" src="/static/images/rooms/huy-nguyen-AB-q9lwCVv8-unsplash.jpg" alt="">
-                                <div class="wishlist-btn">
-                                    <i class="fa-regular fa-heart"></i>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="verified-badge">
-                                        Verified
-                                    </span>
-                                    <small>
-                                        <i class="fa-solid fa-star text-warning"></i>
-                                        <i class="fa-solid fa-star text-warning"></i>
-                                        <i class="fa-solid fa-star text-warning"></i>
-                                        <i class="fa-solid fa-star text-warning"></i>
-                                        4.4
-                                    </small>
-                                   
-                                </div>
-                                <h4 class="card-title">
-                                    Duplex
-                                </h4>
-                                <p class="text-muted mb-2">Lekki, Lagos</p>
-                                <div class="d-flex gap-3 small text-muted mb-3">
-                                    <span>
-                                        <i class="fa-solid fa-bed"></i>
-                                        4 Beds
-                                    </span>
-                                    <span>
-                                        <i class="fa-solid fa-bath"></i>
-                                        5 Beds
-                                    </span>
-                                </div>
-                                <div class="d-flex justify-content-between align-content-center">
-                                    <div>
-                                        <span class="price">
-                                            ₦45,000
-                                        </span>
-                                        <small>night</small>
-                                    </div>
-                                    <a href="/properties_details" class="searchbtn">View</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    {% endif %}
                 </div>
                 <nav class="mt-5">
                     <ul class="pagination justify-content-center">
-                        <li class="page-item active">
-                            <a href="#" class="page-link">1</a>
-                        </li>
-                        <li class="page-item">
-                            <a href="#" class="page-link">2</a>
-                        </li>
-                        <li class="page-item">
-                            <a href="#" class="page-link">3</a>
-                        </li>
+                        <li class="page-item active"><a href="#" class="page-link">1</a></li>
+                        <li class="page-item"><a href="#" class="page-link">2</a></li>
+                        <li class="page-item"><a href="#" class="page-link">3</a></li>
                     </ul>
                 </nav>
             </div>
-       </div>
+        </div>
+        </form>
     </div>
    </div>
-    {% include "include/footer.html" %}
-    </div>
-    <script src="/static/bootstrap/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
-
-
+    {% block customjs %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchForm = document.getElementById('searchForm');
+            const sortBy = document.getElementById('sortBy');
+            if (sortBy && searchForm) {
+                sortBy.addEventListener('change', function () {
+                    searchForm.submit();
+                });
+            }
+        });
+    </script>
+    {% endblock %}
+    {% endblock %}
+   

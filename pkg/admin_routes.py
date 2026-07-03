@@ -1,28 +1,27 @@
-from flask import render_template, request, url_for, redirect,flash, session, Blueprint, jsonify, current_app
+from flask import render_template, request, url_for, redirect, flash, session, jsonify, current_app
 from decimal import Decimal
 import os, uuid
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import current_user
 from pkg import app
 from pkg.forms import AdminRegisterForm, AdminLoginForm
-from pkg.models import Admin,db, Property, PropertyType, PropertyState, PropertyLGA,PropertyAmenity, Amenity, PropertyImage
+from pkg.models import Admin, db, Property, PropertyType, PropertyState, PropertyLGA, PropertyAmenity, Amenity, PropertyImage, User, Booking
+from pkg.admin_service import AdminDashboardService
 
-
+admin_service = AdminDashboardService()
 
 
 @app.route('/admin-dashboard/')
 def admin_dashboard():
-
     if 'adminonline' not in session:
         flash("Please login first.", "errormsg")
         return redirect(url_for('admin_login'))
 
     admin_id = session['adminonline']
-    deets = Admin.query.get(admin_id)
+    dashboard_context = admin_service.get_dashboard_context(admin_id)
 
     return render_template(
         'admin/admin_dashboard.html',
-        deets=deets
+        **dashboard_context
     )
 
 @app.route('/admin-register/', methods=['GET', 'POST'])
@@ -67,21 +66,38 @@ def admin_login():
     return render_template("admin/admin_login.html", form=form)
 
 
+@app.route('/admin-logout/')
+def admin_logout():
+    session.pop('adminonline', None)
+    session.clear()
+    flash("You have been logged out.", "success")
+    return redirect(url_for('admin_login'))
+
+
 @app.route('/add-property/', methods=['GET'])
 def add_property():
     property_types = PropertyType.query.order_by(PropertyType.prop_typename).all()
     property_states = PropertyState.query.order_by(PropertyState.state_name).all()
     amenities = Amenity.query.order_by(Amenity.amenity_name).all()
     return render_template(
-    "admin/add_property.html",
-    property_types=property_types,
-    property_states=property_states,
-    amenities=amenities
-)
+        "admin/add_property.html",
+        property_types=property_types,
+        property_states=property_states,
+        amenities=amenities
+    )
 
-ALLOWED_EXTENSIONS={'jpg', 'jpeg', 'png', 'webp'}
+ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp'}
+
 def allowed_file(filename):
-     return("." in filename and filename.rsplit(".",1)[1].lower() in ALLOWED_EXTENSIONS)
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+def parse_bool(value):
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value.lower() in ("true", "1", "yes", "y")
+    return bool(value)
 
 
 def save_image(image):
@@ -121,10 +137,7 @@ def save_image(image):
 
 @app.route("/save-property/", methods=["POST"])
 def save_property():
-
     try:
-
-
         prop_title = request.form.get("prop_title", "").strip()
         prop_description = request.form.get("prop_description", "").strip()
         prop_typeid = request.form.get("prop_typeid")
@@ -293,7 +306,6 @@ def save_property():
 
 @app.route('/get-lgas/<int:state_id>', methods=['GET'])
 def get_lgas(state_id):
-
     lgas = PropertyLGA.query.filter_by(
         state_id=state_id
     ).order_by(
@@ -301,13 +313,89 @@ def get_lgas(state_id):
     ).all()
 
     data = []
-
     for lga in lgas:
-
         data.append({
             "id": lga.lga_id,
             "name": lga.lga_name
         })
 
     return jsonify(data)
+
+
+@app.route('/admin/properties/<int:property_id>', methods=['DELETE'])
+def delete_property(property_id):
+    if 'adminonline' not in session:
+        return jsonify({"status": "error", "message": "Unauthorized"}), 401
+
+    property_item = admin_service.delete_property(property_id)
+    if not property_item:
+        return jsonify({"status": "error", "message": "Property not found"}), 404
+
+    return jsonify({"status": "success", "message": "Property deleted successfully"})
+
+
+@app.route('/admin/properties/<int:property_id>/status', methods=['POST'])
+def update_property_status(property_id):
+    if 'adminonline' not in session:
+        return jsonify({"status": "error", "message": "Unauthorized"}), 401
+
+    status = request.json.get('status') if request.is_json else request.form.get('status')
+    try:
+        property_item = admin_service.update_property_status(property_id, status)
+    except ValueError as exc:
+        return jsonify({"status": "error", "message": str(exc)}), 400
+
+    if not property_item:
+        return jsonify({"status": "error", "message": "Property not found"}), 404
+
+    return jsonify({"status": "success", "message": "Status updated", "property_id": property_id})
+
+
+@app.route('/admin/properties/<int:property_id>/verify', methods=['POST'])
+def verify_property(property_id):
+    if 'adminonline' not in session:
+        return jsonify({"status": "error", "message": "Unauthorized"}), 401
+
+    verified = request.json.get('verified', True) if request.is_json else request.form.get('verified', True)
+    verified = parse_bool(verified)
+    property_item = admin_service.verify_property(property_id, verified)
+
+    if not property_item:
+        return jsonify({"status": "error", "message": "Property not found"}), 404
+
+    return jsonify({"status": "success", "message": "Property verification updated"})
+
+
+@app.route('/admin/hosts/<int:user_id>/verify', methods=['POST'])
+def verify_host(user_id):
+    if 'adminonline' not in session:
+        return jsonify({"status": "error", "message": "Unauthorized"}), 401
+
+    verified = request.json.get('verified', True) if request.is_json else request.form.get('verified', True)
+    verified = parse_bool(verified)
+    user = admin_service.verify_host(user_id, verified)
+
+    if not user:
+        return jsonify({"status": "error", "message": "Host not found"}), 404
+
+    return jsonify({"status": "success", "message": "Host verification updated"})
+
+
+@app.route('/admin/bookings/<int:booking_id>/status', methods=['POST'])
+def update_booking_status(booking_id):
+    if 'adminonline' not in session:
+        return jsonify({"status": "error", "message": "Unauthorized"}), 401
+
+    status = request.json.get('status') if request.is_json else request.form.get('status')
+    booking = Booking.query.get(booking_id)
+    if not booking:
+        return jsonify({"status": "error", "message": "Booking not found"}), 404
+
+    allowed_statuses = {"pending", "confirmed", "cancelled", "completed"}
+    if status not in allowed_statuses:
+        return jsonify({"status": "error", "message": "Invalid booking status"}), 400
+
+    booking.booking_status = status
+    db.session.commit()
+    return jsonify({"status": "success", "message": "Booking status updated"})
      

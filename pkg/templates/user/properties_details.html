@@ -1,22 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Book affordable accommodation We Offer verified Booking,  Reservations, Bespoke airport transfer Packages & Much More. Book..." >
-	<meta name="robot" content="noindex, nofollow">
-	<meta name="author" content="Debby Sinkalu">
-	<link rel="preconnect" href="https://fonts.googleapis.com">
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-	<link href="/static/bootstrap/css/bootstrap.css" rel="stylesheet">
-    <link rel="stylesheet" href="/static/fontawesome/css/all.min.css">
-	<link href="/static/main.css" rel="stylesheet">
-    <title>Verified Short-let Apartments</title>
-</head>
-<body>
-    <div class="container-fluid">
-       {% include "include/header.html" %}
+{% extends "user/layout.html" %}
+{% block main_content %}
         <div class="modal fade" id="loginmodal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog">
               <div class="modal-content">
@@ -265,10 +248,5 @@
    </div>
   </div>
    </div>
-    {% include "include/footer.html" %}
-    </div>
-    <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
-
-
+    {% endblock %}
+   
