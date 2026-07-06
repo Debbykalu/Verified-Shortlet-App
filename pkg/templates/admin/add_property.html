@@ -61,6 +61,8 @@
                 method="POST"
                 enctype="multipart/form-data">
 
+                <div id="responseMessage" class="mb-3"></div>
+
                 
 
                 {% if csrf_token %}
@@ -338,6 +340,27 @@
 
         </div>
 
+        <!-- City -->
+        <div class="col-md-6">
+
+            <label
+                for="prop_city"
+                class="form-label fw-semibold">
+
+                City
+
+            </label>
+
+            <input
+                type="text"
+                class="form-control"
+                id="prop_city"
+                name="prop_city"
+                placeholder="Enter the property city"
+                required>
+
+        </div>
+
         <!-- Property Address -->
 
         <div class="col-12">
@@ -495,7 +518,24 @@
         </p>
     </div>
 
-    <div class="row">
+    <div class="row g-2 align-items-end mb-3">
+        <div class="col-md-8">
+            <label for="newAmenityName" class="form-label fw-semibold">Add Amenity</label>
+            <input
+                type="text"
+                id="newAmenityName"
+                class="form-control"
+                placeholder="Type amenity name, e.g. Swimming Pool">
+        </div>
+        <div class="col-md-4 d-grid">
+            <button type="button" id="saveAmenityBtn" class="btn btn-outline-primary">
+                <i class="fa-solid fa-plus me-2"></i>
+                Save Amenity
+            </button>
+        </div>
+    </div>
+
+    <div class="row" id="amenitiesContainer">
 
         {% for amenity in amenities %}
 
@@ -983,6 +1023,56 @@
 {% block customjs %}
     <script>
         $(document).ready(function(){
+            const csrfToken = "{{ csrf_token() }}";
+
+            function appendAmenityCheckbox(amenity){
+                if (!amenity || !amenity.amenity_id){
+                    return;
+                }
+                const checkboxId = `amenity${amenity.amenity_id}`;
+                if (document.getElementById(checkboxId)){
+                    document.getElementById(checkboxId).checked = true;
+                    return;
+                }
+                const html = `
+                    <div class="col-md-3 mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="amenities" id="${checkboxId}" value="${amenity.amenity_id}" checked>
+                            <label class="form-check-label" for="${checkboxId}">${amenity.amenity_name}</label>
+                        </div>
+                    </div>
+                `;
+                $('#amenitiesContainer').prepend(html);
+            }
+
+            $('#saveAmenityBtn').click(function(){
+                const button = $(this);
+                const amenityName = $('#newAmenityName').val().trim();
+                if (!amenityName){
+                    $('#responseMessage').html('<div class="alert alert-danger">Enter an amenity name first.</div>');
+                    return;
+                }
+                button.prop('disabled', true).text('Saving...');
+                $.ajax({
+                    url: '/admin/amenities',
+                    type: 'POST',
+                    headers: { 'X-CSRFToken': csrfToken },
+                    data: { amenity_name: amenityName },
+                    success: function(response){
+                        appendAmenityCheckbox(response.amenity);
+                        $('#newAmenityName').val('');
+                        $('#responseMessage').html(`<div class="alert alert-success">${response.message}</div>`);
+                    },
+                    error: function(xhr){
+                        const message = xhr.responseJSON?.message || 'Unable to save amenity.';
+                        $('#responseMessage').html(`<div class="alert alert-danger">${message}</div>`);
+                    },
+                    complete: function(){
+                        button.prop('disabled', false).html('<i class="fa-solid fa-plus me-2"></i>Save Amenity');
+                    }
+                });
+            });
+
             $('#addPropertyForm').submit(function(e){
                 e.preventDefault()
             let form = document.getElementById('addPropertyForm');
@@ -1003,7 +1093,7 @@
                             $('#responseMessage').html(`<div class="alert alert-success">${response.message}</div>`)
                             $('#addPropertyForm')[0].reset();
                             $("#featuredPreview").html("");
-                            $("#gallerypreview").html("")
+                            $("#galleryPreview").html("")
                         }
                         else{
                             $('#responseMessage').html(`<div class="alert alert-danger">${response.message}</div>`)
@@ -1018,7 +1108,7 @@
                         $('#responseMessage').html(`<div class="alert alert-danger">${message}</div>`)
                     },
                     complete: function(){
-                        $('#savePropertyBtn').prop("disabled", false).html(`<i class="fa-solid fa-save me-2"></i>
+                        $('#savePropertyBtn').prop("disabled", false).html(`<i class="fa-solid fa-floppy-disk me-2"></i>
                             Save Property
                     `);
                     }

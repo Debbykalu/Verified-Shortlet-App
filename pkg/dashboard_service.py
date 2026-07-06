@@ -3,6 +3,7 @@ import uuid
 from decimal import Decimal
 from datetime import datetime, date
 from sqlalchemy import or_, and_
+from sqlalchemy.orm import joinedload
 from flask import current_app
 from pkg.models import (
     User,
@@ -10,6 +11,8 @@ from pkg.models import (
     PropertyType,
     PropertyState,
     PropertyLGA,
+    Amenity,
+    PropertyAmenity,
     Booking,
     PropertyImage,
     db,
@@ -65,7 +68,11 @@ class DashboardService:
         )
 
         host_bookings = (
-            Booking.query.join(Property, Booking.booking_propid == Property.prop_id)
+            Booking.query.options(
+                joinedload(Booking.user),
+                joinedload(Booking.property),
+            )
+            .join(Property, Booking.booking_propid == Property.prop_id)
             .filter(Property.prop_userid == user_id)
             .order_by(Booking.created_at.desc())
             .all()
@@ -80,6 +87,7 @@ class DashboardService:
 
         property_types = PropertyType.query.order_by(PropertyType.prop_typename).all()
         property_states = PropertyState.query.order_by(PropertyState.state_name).all()
+        amenities = Amenity.query.order_by(Amenity.amenity_name).all()
 
         return {
             "deets": user,
@@ -93,6 +101,7 @@ class DashboardService:
             },
             "property_types": property_types,
             "property_states": property_states,
+            "amenities": amenities,
         }
 
     def get_search_metadata(self):
@@ -123,6 +132,9 @@ class DashboardService:
             "max_guest": prop.max_guest,
             "bedrooms": prop.bedrooms,
             "bathrooms": prop.bathrooms,
+            "amenities": [
+                pa.amenity.amenity_name for pa in getattr(prop, "property_amenities", []) if getattr(pa, "amenity", None)
+            ],
             "is_verified": prop.is_verified,
             "main_image_url": prop.prop_mainimage_url or "/static/images/rooms/patrick-perkins-iRiVzALa4pI-unsplash.jpg",
         }
@@ -215,11 +227,14 @@ class DashboardService:
         price_per_night,
         prop_stateid=None,
         prop_lgaid=None,
+        prop_city=None,
         bedrooms=0,
         bathrooms=0,
         max_guest=1,
         prop_availability_status="inactive",
         featured_image=None,
+        gallery_images=None,
+        selected_amenities=None,
     ):
         if not prop_title:
             raise ValueError("Property title is required.")
@@ -228,13 +243,13 @@ class DashboardService:
         if not price_per_night:
             raise ValueError("Price per night is required.")
 
-        if prop_stateid is None:
+        if prop_stateid is None or prop_stateid == "":
             first_state = PropertyState.query.first()
             if not first_state:
                 raise ValueError("No property states available.")
             prop_stateid = first_state.state_id
 
-        if prop_lgaid is None:
+        if prop_lgaid is None or prop_lgaid == "":
             first_lga = PropertyLGA.query.filter_by(state_id=prop_stateid).first()
             if not first_lga:
                 raise ValueError("No LGA available for the selected state.")
@@ -249,6 +264,7 @@ class DashboardService:
             prop_lgaid=int(prop_lgaid),
             prop_category=prop_category or "Apartment",
             prop_address=prop_address,
+            prop_city=prop_city or "",
             price_per_night=Decimal(price_per_night),
             bedrooms=int(bedrooms) if bedrooms else 0,
             bathrooms=int(bathrooms) if bathrooms else 0,
@@ -260,9 +276,39 @@ class DashboardService:
         self.db.session.add(property_item)
         self.db.session.flush()
 
-        if featured_image and featured_image.filename:
+        if featured_image and getattr(featured_image, "filename", ""):
             filename = self._save_image_file(featured_image)
             property_item.prop_mainimage_url = filename
+            featured = PropertyImage(
+                img_propid=property_item.prop_id,
+                image_url=filename,
+                is_featured=True,
+            )
+            self.db.session.add(featured)
+
+        gallery_images = gallery_images or []
+        for image in gallery_images:
+            if not image or not getattr(image, "filename", ""):
+                continue
+            filename = self._save_image_file(image)
+            gallery = PropertyImage(
+                img_propid=property_item.prop_id,
+                image_url=filename,
+                is_featured=False,
+            )
+            self.db.session.add(gallery)
+
+        selected_amenities = selected_amenities or []
+        for amenity_id in selected_amenities:
+            try:
+                amenity_id_int = int(amenity_id)
+            except (ValueError, TypeError):
+                continue
+            property_amenity = PropertyAmenity(
+                prop_id=property_item.prop_id,
+                amenity_id=amenity_id_int,
+            )
+            self.db.session.add(property_amenity)
 
         self.db.session.commit()
         return property_item

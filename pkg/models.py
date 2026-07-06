@@ -1,5 +1,6 @@
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import Enum, Numeric, func
 
 db = SQLAlchemy()
 
@@ -73,24 +74,18 @@ class User(db.Model):
         lazy=True,
         cascade="all, delete-orphan"
     )
-
     reviews = db.relationship(
         "Review",
         backref="user",
         lazy=True,
         cascade="all, delete-orphan"
     )
-
     bookings = db.relationship(
         "Booking",
         backref="user",
         lazy=True,
         cascade="all, delete-orphan"
     )
-
-
-
-
 class Admin(db.Model):
     __tablename__ = "admins"
 
@@ -98,28 +93,15 @@ class Admin(db.Model):
         db.Integer,
         primary_key=True
     )
-
-    admin_firstname = db.Column(
-        db.String(200),
-        nullable=False
-    )
-
-    admin_lastname = db.Column(
-        db.String(200),
-        nullable=False
-    )
-
     admin_email = db.Column(
         db.String(150),
         unique=True,
         nullable=False
     )
-
     admin_password = db.Column(
         db.String(255),
         nullable=False
     )
-
 
 
 class PropertyType(db.Model):
@@ -250,32 +232,40 @@ class Property(db.Model):
     prop_mainimage_url = db.Column(db.String(255))
 
     images = db.relationship(
-    "PropertyImage",
-    backref="property",
-    lazy=True,
-    cascade="all, delete-orphan"
-)
+        "PropertyImage",
+        backref="property",
+        lazy=True,
+        cascade="all, delete-orphan"
+    )
 
-reviews = db.relationship(
-    "Review",
-    backref="property",
-    lazy=True,
-    cascade="all, delete-orphan"
-)
+    reviews = db.relationship(
+        "Review",
+        back_populates="property",
+        lazy=True,
+        cascade="all, delete-orphan"
+    )
 
-bookings = db.relationship(
-    "Booking",
-    backref="property",
-    lazy=True,
-    cascade="all, delete-orphan"
-)
+    bookings = db.relationship(
+        "Booking",
+        backref="property",
+        lazy=True,
+        cascade="all, delete-orphan"
+    )
 
-property_amenities = db.relationship(
-    "PropertyAmenity",
-    backref="property",
-    lazy=True,
-    cascade="all, delete-orphan"
-)
+    property_amenities = db.relationship(
+        "PropertyAmenity",
+        backref="property",
+        lazy=True,
+        cascade="all, delete-orphan"
+    )
+
+    @property
+    def amenities(self):
+        return [
+            pa.amenity.amenity_name
+            for pa in self.property_amenities
+            if getattr(pa, "amenity", None)
+        ]
 
 class Review(db.Model):
     __tablename__ = "reviews"
@@ -310,7 +300,7 @@ class Review(db.Model):
 
     property = db.relationship(
         "Property",
-        backref="reviews"
+        back_populates="reviews"
     )
 
 
@@ -319,6 +309,13 @@ class Amenity(db.Model):
 
     amenity_id = db.Column(db.Integer, primary_key=True)
     amenity_name = db.Column(db.String(100), nullable=False)
+
+    property_amenities = db.relationship(
+        "PropertyAmenity",
+        backref="amenity",
+        lazy=True,
+        cascade="all, delete-orphan"
+    )
 
 class PropertyAmenity(db.Model):
     __tablename__ = "property_amenities"
@@ -336,6 +333,65 @@ class PropertyAmenity(db.Model):
         db.ForeignKey("amenities.amenity_id"),
         nullable=False
     )
+
+
+class BookingDetail(db.Model):
+    __tablename__ = "booking_details"
+
+    booking_detail_id = db.Column(db.Integer, primary_key=True)
+
+    booking_userid = db.Column(
+        db.Integer,
+        db.ForeignKey("users.user_id"),
+        nullable=True
+    )
+
+    booking_propid = db.Column(
+        db.Integer,
+        db.ForeignKey("properties.prop_id"),
+        nullable=False
+    )
+
+    full_name = db.Column(db.String(200), nullable=False)
+    email = db.Column(db.String(150), nullable=False)
+    phone = db.Column(db.String(50), nullable=False)
+
+    checkin_date = db.Column(db.Date, nullable=False)
+    checkout_date = db.Column(db.Date, nullable=False)
+
+    guests = db.Column(db.Integer, nullable=False, default=1)
+    special_requests = db.Column(db.Text)
+    terms_agreed = db.Column(db.Boolean, nullable=False, default=False)
+
+    nights = db.Column(db.Integer, nullable=False, default=1)
+    subtotal = db.Column(db.Numeric(12, 2), nullable=False, default=0)
+    cleaning_fee = db.Column(db.Numeric(12, 2), nullable=False, default=5000)
+    service_fee = db.Column(db.Numeric(12, 2), nullable=False, default=3000)
+    total_amount = db.Column(db.Numeric(12, 2), nullable=False, default=0)
+
+    booking_status = db.Column(
+        db.Enum(
+            "pending_payment",
+            "paid",
+            "cancelled",
+            name="booking_detail_status"
+        ),
+        default="pending_payment"
+    )
+
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow
+    )
+
+    updated_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow
+    )
+
+    user = db.relationship("User", backref="booking_details")
+    property = db.relationship("Property", backref="booking_details")
 
 class Booking(db.Model):
     __tablename__ = "bookings"
@@ -379,6 +435,12 @@ class Booking(db.Model):
         db.DateTime,
         default=datetime.utcnow
     )
+
+class Item(db.Model):
+    item_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    item_name = db.Column(db.String(100), unique=True, nullable=False)
+    item_amount = db.Column(Numeric(12, 2), nullable=False)
+
 class PropertyImage(db.Model):
 
     __tablename__ = "properties_images"
@@ -408,3 +470,24 @@ class PropertyImage(db.Model):
         db.DateTime,
         default=datetime.utcnow
     )
+class BookingPayment(db.Model):
+    __tablename__ = "booking_payments"
+    payment_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    booking_amount = db.Column(Numeric(12, 2), nullable=False)
+
+    booking_payment_date = db.Column(db.DateTime, nullable=False)
+
+    booking_payment_status = db.Column(Enum("pending", "paid", "failed", "cancelled", name="payment_status"),
+        nullable=False, index=True, server_default="pending")
+
+    booking_userid = db.Column(db.Integer, db.ForeignKey("users.user_id", ondelete="CASCADE"),
+        nullable=False, index=True )
+
+    booking_bookingid = db.Column(db.Integer, db.ForeignKey("booking_details.booking_detail_id", ondelete="CASCADE"),
+        nullable=False, index=True )
+
+    advert_payment_reference = db.Column(db.String(100), unique=True,
+        nullable=False)
+
+    user = db.relationship("User", backref="booking_payments")
+    booking_detail = db.relationship("BookingDetail", backref="payments")

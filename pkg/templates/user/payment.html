@@ -1,405 +1,127 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Book affordable accommodation We Offer verified Booking,  Reservations, Bespoke airport transfer Packages & Much More. Book..." >
-	<meta name="robot" content="noindex, nofollow">
-	<meta name="author" content="Debby Sinkalu">
-	<link rel="preconnect" href="https://fonts.googleapis.com">
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-	<link href="/static/bootstrap/css/bootstrap.css" rel="stylesheet">
-    <link rel="stylesheet" href="/static/fontawesome/css/all.min.css">
-	<link href="/static/main.css" rel="stylesheet">
-    <title>Verified Short-let Apartments</title>
-</head>
-<body>
-    <div class="container-fluid">
-       {% include "include/header.html" %}
-        <div class="modal fade" id="loginmodal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-              <div class="modal-content">
-          
-                <div class="modal-header">
-                  <h1 class="modal-title fs-5" id="exampleModalLabel">
-                    Login
-                  </h1>
-          
-                  <button type="button" 
-                          class="btn-close" 
-                          data-bs-dismiss="modal"
-                          aria-label="Close">
-                  </button>
-                </div>
-          
-                <div class="modal-body">
-                    <form>
-                        <div class="mb-3">
-                          <label for="Email" class="form-label">Email address</label>
-                          <input type="email" class="form-control" id="email" aria-describedby="emailHelp">
-                        </div>
-                        <div class="mb-3">
-                          <label for="Password" class="form-label">Password</label>
-                          <input type="password" class="form-control" id="pwd">
-                        </div>
-                        <div class="text-end mb-3">
-                            <a href="forgot-password.html"
-                               class="text-decoration-none text-#4fc3dc">
-                               Forgot Password?
-                            </a>
-                            <button type="button" class="btn btn-primary">Login</button>
-                          </div>
-                      </form>
-                </div>
-          
-                <div class="modal-footer">
-                    <div class="modal-footer justify-content-center">
+{% extends "user/layout.html" %}
+{% block main_content %}
+<div class="container py-5 mt-5">
+  <div class="mb-4">
+    <h2 class="fw-bold">Payment</h2>
+    <p class="text-muted mb-0">Complete your secure booking payment.</p>
+  </div>
 
-                        <p class="mb-0">
-                          New user?
-                          <a href="signup.html"
-                             class="text-decoration-none fw-bold text-#4fc3dc"
-                             data-bs-toggle="modal"
-                             data-bs-target="#signupmodal"
-                             data-bs-dismiss="modal"
-                             >
-                             Create an account
-                          </a>
-                        </p>
-                
-                      </div>
-                </div>
-          
-              </div>
-            </div>
-        </div>
-        <div class="modal fade" id="signupmodal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-              <div class="modal-content">
-          
-                <div class="modal-header">
-                  <h1 class="modal-title fs-5" id="exampleModalLabel">
-                    Create Account
-                  </h1>
-          
-                  <button type="button" 
-                          class="btn-close" 
-                          data-bs-dismiss="modal"
-                          aria-label="Close">
-                  </button>
-                </div>
-          
-                <div class="modal-body">
-                    <form>
-                        <div class="mb-3">
-                            <label for="Fullname" class="form-label">Full Name</label>
-                            <input type="text" class="form-control" id="fullname" aria-describedby="fullname">
-                          </div>
-                        <div class="mb-3">
-                          <label for="Email" class="form-label">Email address</label>
-                          <input type="email" class="form-control" id="email" aria-describedby="emailHelp">
-                        </div>
-                        <div class="mb-3">
-                          <label for="Password" class="form-label">Password</label>
-                          <input type="password" class="form-control" id="pwd">
-                        </div>
-                        <div class="mb-3">
-                            <label for="Confirm Password" class="form-label">Confirm Password</label>
-                            <input type="password" class="form-control" id="confirmpwd">
-                          </div>
-                        <div class="text-end mb-3">
-                            <button type="button" class="btn btn-primary">Signup</button>
-                          </div>
-                      </form>
-                </div>
-          
-                <div class="modal-footer">
-                    <div class="modal-footer justify-content-center">
-
-                        <p class="mb-0">
-                          Already a user?
-                          <a href="#"
-                             class="text-decoration-none fw-bold text-#4fc3dc"
-                             data-bs-toggle="modal"
-                            data-bs-target="#loginmodal"
-                            data-bs-dismiss="modal">
-                             Login
-                          </a>
-                        </p>
-                
-                      </div>
-                </div>
-          
-              </div>
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <div class="booking-card p-4">
+        <h4 class="mb-3">Select Payment Method</h4>
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <div class="method-box p-3 border rounded">
+              <h6 class="mb-1">Debit / Credit Card</h6>
+              <small class="text-muted">Visa, Mastercard, Verve</small>
             </div>
           </div>
-    <div class="container py-5">
-          
-        <div class="mb-5">
-          
-              <div class="d-flex align-items-center gap-3">
-          
-                <div class="step-box">
-                  2
-                </div>
-          
-                <div>
-                  <h2 class="fw-bold mb-1">
-                    Payment
-                  </h2>
-          
-                  <p class="text-muted mb-0">
-                    Complete your secure payment
-                  </p>
-                </div>
-          
-              </div>
-          
-        </div>
-        <div class="row g-4">
-          
-    <div class="col-lg-7">
-          
-        <div class="booking-card">
-          
-                    <h4 class="mb-4">
-                        Select Payment Method 
-                    </h4>
-                    <div class="row g-3 mb-5">
-                        <div class="col-md-6">
-                            <div class="method-box">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h5 class="mb-1">
-                                            Debit / Credit Card
-                                        </h5>
-                                        <small class="text-muted">
-                                            Visa, Mastercard
-                                        </small>
-                                    </div>
-                                    <i class="fa-regular fa-credit-card fa-2x"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="method-box">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h5 class="mb-1">
-                                            Bank Transfer
-                                        </h5>
-                                        <small class="text-muted">
-                                            Instant Confirmation
-                                        </small>
-                                    </div>
-                                    <i class="fa-solid fa-building-columns fa-2x"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <h4 class="mb-3">
-                        Card Information
-                    </h4>
-                    <form>
-                        <div class="mb-3">
-              
-                          <label class="form-label">
-                            Name on Card
-                          </label>
-                          <input type="text"
-                          class="form-control form-control-lg"
-                          placeholder="John Doe">
-                        </div>
-                        <div class="mb-3">
-                          <label class="form-label">
-                            Card Number
-                          </label>
-                          <input type="text"
-                          class="form-control form-control-lg"
-                          placeholder="1234 5678 9012 3456">
-                        </div>
-                        <div class="row">
-                          <div class="col-md-6 mb-3">
-                            <label class="form-label">
-                              Expiry Date
-                            </label>
-                            <input type="text"
-                            class="form-control form-control-lg"
-                            placeholder="MM/YY">
-                          </div>
-                          <div class="col-md-6 mb-3">
-                            <label class="form-label">
-                              CVV
-                            </label>
-                            <input type="password"
-                            class="form-control form-control-lg"
-                            placeholder="123">
-                          </div>
-                        </div>
-                        <div class="mb-4">
-                          <label class="form-label">
-                            Billing Address
-                          </label>
-                          <input type="text"
-                          class="form-control form-control-lg"
-                          placeholder="Enter billing address">
-                        </div>
-                        <a href="(url_for('confirmation'))"
-                        class="btn btn-lg searchbtn w-100">
-              
-                          Pay ₦98,000
-              
-                        </a>
-              
-                      </form>
-        </div>
-    </div>
-            
-            <div class="col-lg-5">
-          
-                <div class="summary-card">
-          
-                  <div class="d-flex gap-3 mb-4">
-          
-                    <img src="https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?q=80&amp;w=1200" class="property-image" width="140">
-          
-                    <div>
-          
-                      <h5 class="mb-1">
-                        Luxury 2 Bedroom Apartment
-                      </h5>
-          
-                      <p class="text-muted small mb-2">
-                        Lekki Phase 1, Lagos
-                      </p>
-          
-                      <span class="badge verified-badge">
-                        Verified
-                      </span>
-          
-                    </div>
-          
-                  </div>
-          
-                  <hr>
-          
-                  <h5 class="mb-3">
-                    Booking Summary
-                  </h5>
-          
-                  <div class="d-flex justify-content-between mb-2">
-          
-                    <span class="text-muted">
-                      Check In
-                    </span>
-          
-                    <span>
-                      12 May 2025
-                    </span>
-          
-                  </div>
-          
-                  <div class="d-flex justify-content-between mb-2">
-          
-                    <span class="text-muted">
-                      Check Out
-                    </span>
-          
-                    <span>
-                      14 May 2025
-                    </span>
-          
-                  </div>
-          
-                  <div class="d-flex justify-content-between mb-4">
-          
-                    <span class="text-muted">
-                      Guests
-                    </span>
-          
-                    <span>
-                      2 Guests
-                    </span>
-          
-                  </div>
-          
-                  <hr>
-          
-                  <h5 class="mb-3">
-                    Payment Summary
-                  </h5>
-          
-                  <div class="d-flex justify-content-between mb-2">
-          
-                    <span>
-                     Apartment Fee
-                    </span>
-          
-                    <span>
-                      ₦90,000
-                    </span>
-          
-                  </div>
-          
-                  <div class="d-flex justify-content-between mb-2">
-          
-                    <span>
-                      Cleaning Fee
-                    </span>
-          
-                    <span>
-                      ₦5,000
-                    </span>
-          
-                  </div>
-          
-                  <div class="d-flex justify-content-between mb-2">
-          
-                    <span>
-                      Service Fee
-                    </span>
-          
-                    <span>
-                      ₦3,000
-                    </span>
-          
-                  </div>
-          
-                  <hr>
-          
-                  <div class="d-flex justify-content-between fw-bold mb-4">
-          
-                    <span>Total</span>
-          
-                    <span>₦98,000</span>
-          
-                  </div>
-          
-                  <div class="secure-box">
-          
-                    <div class="d-flex align-items-center gap-2">
-          
-                      <i class="fa-solid fa-lock"></i>
-          
-                      <small>
-                        Secure SSL encrypted payment
-                      </small>
-          
-                    </div>
-          
-                  </div>
-          
-                </div>
-          
+          <div class="col-md-6">
+            <div class="method-box p-3 border rounded">
+              <h6 class="mb-1">Bank Transfer</h6>
+              <small class="text-muted">Instant confirmation supported</small>
             </div>
+          </div>
         </div>
-    </div>
-   </div>
-   {% include "include/footer.html" %}
-    </div>
-    <script src="/static/bootstrap/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
 
+        <div class="card shadow-sm">
+    <div class="card-body">
 
+        <h4>Booking Summary</h4>
+
+        <hr>
+
+        <p>
+            <strong>Property:</strong>
+            {{ booking_detail.property.prop_title }}
+        </p>
+
+        <p>
+            <strong>Check In:</strong>
+            {{ booking_detail.checkin_date.strftime('%d %b %Y') }}
+        </p>
+
+        <p>
+            <strong>Check Out:</strong>
+            {{ booking_detail.checkout_date.strftime('%d %b %Y') }}
+        </p>
+
+        <hr>
+
+        <h3>
+            ₦{{ "{:,.0f}".format(total_amount) }}
+        </h3>
+
+        <form action="{{ url_for('paystack_init') }}" method="POST">
+
+            <input
+                type="hidden"
+                name="csrf_token"
+                value="{{ csrf_token() }}"
+            >
+
+            <input
+                type="hidden"
+                name="booking_detail_id"
+                value="{{ booking_detail.booking_detail_id }}"
+            >
+
+            <button
+                class="btn btn-success btn-lg w-100"
+                type="submit">
+
+                Pay Securely with Paystack
+
+            </button>
+
+        </form>
+
+    </div>
+</div>
+      </div>
+    </div>
+
+    <div class="col-lg-5">
+      <div class="summary-card p-4 border rounded">
+        <h5 class="mb-3">Booking Summary</h5>
+
+        <div class="d-flex justify-content-between mb-2">
+          <span class="text-muted">Property</span>
+          <span>{{ booking_detail.property.prop_title }}</span>
+        </div>
+        <div class="d-flex justify-content-between mb-2">
+          <span class="text-muted">Check In</span>
+          <span>{{ booking_detail.checkin_date.strftime('%d %b %Y') }}</span>
+        </div>
+        <div class="d-flex justify-content-between mb-2">
+          <span class="text-muted">Check Out</span>
+          <span>{{ booking_detail.checkout_date.strftime('%d %b %Y') }}</span>
+        </div>
+        <div class="d-flex justify-content-between mb-3">
+          <span class="text-muted">Guests</span>
+          <span>{{ booking_detail.guests }} Guest{{ '' if booking_detail.guests == 1 else 's' }}</span>
+        </div>
+
+        <hr>
+
+        <div class="d-flex justify-content-between mb-2">
+          <span>₦{{ '{:,.0f}'.format(booking_detail.property.price_per_night) }} × {{ booking_detail.nights }} night{{ '' if booking_detail.nights == 1 else 's' }}</span>
+          <span>₦{{ '{:,.0f}'.format(subtotal) }}</span>
+        </div>
+        <div class="d-flex justify-content-between mb-3">
+          <span>Service Fee</span>
+          <span>₦{{ '{:,.0f}'.format(service_fee) }}</span>
+        </div>
+
+        <hr>
+
+        <div class="d-flex justify-content-between fw-bold">
+          <span>Total</span>
+          <span>₦{{ '{:,.0f}'.format(total_amount) }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

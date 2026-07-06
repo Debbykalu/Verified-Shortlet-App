@@ -112,61 +112,112 @@
                     <div class="col-md-12">
                       <div id="addprop" class="dashboard-card mb-5">
                     <div class="d-flex justify-content-between align-items-center mb-4">
-
                         <div>
                           <h3 class="fw-bold">
                             Add New Property
                           </h3>
                           <p class="text-muted">
-                            Create and submit property for admin approval
+                            Submit a new property for admin review. Once approved, it will go live.
                           </p>
                         </div>
-                        <button class="searchbtn">
+                        <button form="hostAddPropertyForm" type="submit" class="searchbtn">
                           Submit For Review
                         </button>
                   </div>
-                  <form action="#">
+                  <div id="responseMessage"></div>
+                  <form id="hostAddPropertyForm" method="POST" enctype="multipart/form-data">
+                    {% if csrf_token %}
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    {% endif %}
                     <div class="row mb-4">
                       <div class="col-md-6">
-                        <label class="form-label">Property</label>
-                        <input type="text" class="form-control" placeholder="Enter propertyname">
+                        <label class="form-label">Property Title</label>
+                        <input name="prop_title" type="text" class="form-control" placeholder="Enter property title" required>
                       </div>
                       <div class="col-md-6">
                         <label class="form-control-label">Property Type</label>
-                        <select class="form-select form-select-lg">
-                          <option>Apartment</option>
-                          <option>Studio</option>
-                          <option>Duplex</option>
-                          <option>Villa</option>
-                          <option>Hotel</option>
+                        <select name="prop_typeid" class="form-select form-select-lg" required>
+                          <option value="">Select Type</option>
+                          {% for type in property_types %}
+                          <option value="{{ type.prop_type_id }}">{{ type.prop_typename }}</option>
+                          {% endfor %}
                         </select>
                       </div>
                     </div>
                     <div class="row mb-4">
                       <div class="col-md-6">
-                        <label class="form-label">Location</label>
-                        <input type="text" class="form-control" placeholder="Enter property location">
+                        <label class="form-label">State</label>
+                        <select id="prop_stateid" name="prop_stateid" class="form-select" required>
+                          <option value="">Select State</option>
+                          {% for state in property_states %}
+                          <option value="{{ state.state_id }}">{{ state.state_name }}</option>
+                          {% endfor %}
+                        </select>
                       </div>
-                      <div class="col-md-6 mb-4">
+                      <div class="col-md-6">
+                        <label class="form-label">LGA</label>
+                        <select id="prop_lgaid" name="prop_lgaid" class="form-select" required>
+                          <option value="">Select Local Government</option>
+                        </select>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label">City</label>
+                        <input name="prop_city" type="text" class="form-control" placeholder="Enter city" required>
+                      </div>
+                      <div class="col-md-6">
                         <label class="form-control-label">Price per night</label>
-                        <input type="text" class="form-control" placeholder="Enter price per night">
+                        <input name="price_per_night" type="number" min="0" class="form-control" placeholder="Enter price per night" required>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label">Bedrooms</label>
+                        <input name="bedrooms" type="number" min="0" class="form-control" placeholder="Enter number of bedrooms" required>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label">Bathrooms</label>
+                        <input name="bathrooms" type="number" min="0" class="form-control" placeholder="Enter number of bathrooms" required>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label">Max Guests</label>
+                        <input name="max_guest" type="number" min="1" class="form-control" placeholder="Enter max guests" required>
                       </div>
                       <div class="col-12 mb-4">
-
                         <label class="form-label">
                           Description
                         </label>
-              
-                        <textarea class="form-control"
-                        rows="5"
-                        placeholder="Describe your property"></textarea>
-              
+                        <textarea name="prop_description" class="form-control" rows="5" placeholder="Describe your property" required></textarea>
                       </div>
                       <div class="col-12 mb-4">
                         <label class="form-label">
-                          Upload property images
+                          Property Address
                         </label>
-                       <input type="file" class="form-control">
+                        <textarea name="prop_address" class="form-control" rows="3" placeholder="Enter full property address" required></textarea>
+                      </div>
+                      <div class="col-12 mb-4">
+                        <label class="form-label">
+                          Featured Image
+                        </label>
+                        <input name="featured_image" type="file" class="form-control" accept="image/*" required>
+                      </div>
+                      <div class="col-12 mb-4">
+                        <label class="form-label">
+                          Gallery Images
+                        </label>
+                        <input name="property_images" type="file" class="form-control" accept="image/*" multiple>
+                      </div>
+                    </div>
+                    <div class="row mb-4">
+                      <div class="col-12">
+                        <h5 class="fw-bold mb-3">Amenities</h5>
+                        <div class="row" id="hostAmenitiesCheckboxes">
+                          {% for amenity in amenities %}
+                          <div class="col-md-3 mb-3">
+                            <div class="form-check">
+                              <input class="form-check-input" type="checkbox" name="amenities" id="hostAmenity{{ amenity.amenity_id }}" value="{{ amenity.amenity_id }}">
+                              <label class="form-check-label" for="hostAmenity{{ amenity.amenity_id }}">{{ amenity.amenity_name }}</label>
+                            </div>
+                          </div>
+                          {% endfor %}
+                        </div>
                       </div>
                     </div>
                   </form>
@@ -181,39 +232,24 @@
                           Create and manage amenities
                         </p>
                       </div>
-                      <button class="btn searchbtn">
+                          <button class="btn searchbtn" type="button" id="hostAmenityAddBtnTop">
                         Add Amenities
                       </button>
                  </div>
                  <div class="row mb-4">
                     <div class="col-md-10">
-                        <input type="text" class="form-control form-control-lg" placeholder="Add amenity e.g Swimming Pool">
+                        <input type="text" id="hostAmenityName" class="form-control form-control-lg" placeholder="Add amenity e.g Swimming Pool">
                     </div>
                     <div class="col-md-2 d-grid">
-                      <button class="btn btn-outline-primary">Save</button>
+                          <button class="btn btn-outline-primary" type="button" id="hostAmenitySaveBtn">Save</button>
                     </div>
                  </div>
-                 <div>
-                  <span class="amenity-badge">
-                        WIFI
-                        <i class="fa-solid fa-pen ms-2"></i>
-                        <i class="fa-solid fa-trash ms-2"></i>
-                  </span>
-                  <span class="amenity-badge">
-                        Swimming pool
-                        <i class="fa-solid fa-pen ms-2"></i>
-                        <i class="fa-solid fa-trash ms-2"></i>
-                  </span>
-                  <span class="amenity-badge">
-                        Air conditioning
-                        <i class="fa-solid fa-pen ms-2"></i>
-                        <i class="fa-solid fa-trash ms-2"></i>
-                  </span>
-                  <span class="amenity-badge">
-                        Smart tv
-                        <i class="fa-solid fa-pen ms-2"></i>
-                        <i class="fa-solid fa-trash ms-2"></i>
-                  </span>
+                         <div id="hostAmenitiesBadgeList">
+                      {% for amenity in amenities %}
+                      <span class="amenity-badge" id="hostAmenityBadge{{ amenity.amenity_id }}">
+                        {{ amenity.amenity_name }}
+                      </span>
+                      {% endfor %}
                  </div>
                       </div>
                     </div>
@@ -254,7 +290,7 @@
                             </option>
             
                             <option value="approved">
-                                Confirmed
+                                Verified
                             </option>
             
                             <option value="pending">
@@ -299,73 +335,31 @@
                         </thead>
                 
                         <tbody>
-                
+                          {% for booking in recent_reservations %}
                           <tr>
-                
-                            <td>#BK1024</td>
-                
-                            <td>Debby Kalu</td>
-                
-                            <td>Luxury Apartment</td>
-                
-                            <td>12 May 2025</td>
-                
+                            <td>#BK{{ booking.booking_id }}</td>
                             <td>
-                              <span class="badge bg-success">
-                                Confirmed
+                              {% if booking.user %}
+                              {{ booking.user.user_firstname }} {{ booking.user.user_lastname }}
+                              {% else %}
+                              Guest
+                              {% endif %}
+                            </td>
+                            <td>{{ booking.property.prop_title if booking.property else 'Property' }}</td>
+                            <td>{{ booking.created_at.strftime('%d %b %Y') if booking.created_at else 'N/A' }}</td>
+                            <td>
+                              <span class="badge {{ 'bg-success' if booking.booking_status == 'confirmed' else 'bg-warning text-dark' if booking.booking_status == 'pending' else 'bg-danger' }}">
+                                {{ booking.booking_status|capitalize }}
                               </span>
                             </td>
-                
-                            <td class="fw-bold">
-                              ₦135,000
-                            </td>
-                
+                            <td class="fw-bold">₦{{ "{:,.0f}".format(booking.total_amount or 0) }}</td>
                           </tr>
-                
+                          {% endfor %}
+                          {% if recent_reservations|length == 0 %}
                           <tr>
-                
-                            <td>#BK1082</td>
-                
-                            <td>John Peter</td>
-                
-                            <td>Modern Studio</td>
-                
-                            <td>15 May 2025</td>
-                
-                            <td>
-                              <span class="badge bg-warning text-dark">
-                                Pending
-                              </span>
-                            </td>
-                
-                            <td class="fw-bold">
-                              ₦98,000
-                            </td>
-                
+                            <td colspan="6" class="text-center text-muted py-4">No reservations yet.</td>
                           </tr>
-                
-                          <tr>
-                
-                            <td>#BK1100</td>
-                
-                            <td>Sarah James</td>
-                
-                            <td>Beach Apartment</td>
-                
-                            <td>18 May 2025</td>
-                
-                            <td>
-                              <span class="badge bg-danger">
-                                Cancelled
-                              </span>
-                            </td>
-                
-                            <td class="fw-bold">
-                              ₦210,000
-                            </td>
-                
-                          </tr>
-                
+                          {% endif %}
                         </tbody>
                 
                       </table>
@@ -389,7 +383,7 @@
                     </div>
                 
                   </div>
-                  <div class="dashboard-card">
+                  <div id="myprops" class="dashboard-card">
 
                     <div class="d-flex justify-content-between align-items-center mb-4">
                 
@@ -477,91 +471,28 @@
                         </thead>
                 
                         <tbody>
-                
+                          {% for property in host_properties %}
                           <tr>
-                
-                            <td>Luxury Apartment</td>
-                
-                            <td>Apartment</td>
-                
+                            <td>{{ property.prop_title }}</td>
+                            <td>{{ property.property_type.prop_typename if property.property_type else 'Property' }}</td>
                             <td>
-                              <span class="badge bg-success statuss-badge">
-                                Approved
+                              <span class="badge {{ 'bg-success' if property.is_verified else 'bg-warning text-dark' }} statuss-badge">
+                                {{ 'Approved' if property.is_verified else 'Pending Review' }}
                               </span>
                             </td>
-                
-                            <td>12 May 2025</td>
-                
+                            <td>#{{ property.prop_id }}</td>
                             <td>
-                
-                              <button class="btn btn-sm btn-outline-primary">
-                                Edit
-                              </button>
-                
-                              <button class="btn btn-sm btn-outline-danger">
-                                Delete
-                              </button>
-                
-                            </td>
-                
-                          </tr>
-                
-                          <tr>
-                
-                            <td>Modern Studio</td>
-                
-                            <td>Studio</td>
-                
-                            <td>
-                              <span class="badge bg-warning text-dark statuss-badge">
-                                Pending
+                              <span class="badge {{ 'bg-success' if property.prop_availability_status == 'available' else 'bg-warning text-dark' if property.prop_availability_status == 'booked' else 'bg-danger' }}">
+                                {{ property.prop_availability_status|capitalize }}
                               </span>
                             </td>
-                
-                            <td>14 May 2025</td>
-                
-                            <td>
-                
-                              <button class="btn btn-sm btn-outline-primary">
-                                Edit
-                              </button>
-                
-                              <button class="btn btn-sm btn-outline-danger">
-                                Delete
-                              </button>
-                
-                            </td>
-                
                           </tr>
-                
+                          {% endfor %}
+                          {% if host_properties|length == 0 %}
                           <tr>
-                
-                            <td>Beach Villa</td>
-                
-                            <td>Villa</td>
-                
-                            <td>
-                              <span class="badge bg-danger statuss-badge">
-                                Suspended
-                              </span>
-                            </td>
-                
-                            <td>10 May 2025</td>
-                
-                            <td>
-                
-                              <button class="btn btn-sm btn-outline-primary">
-                                Edit
-                              </button>
-                
-                              <button class="btn btn-sm btn-outline-danger">
-                                Delete
-                              </button>
-                
-                            </td>
-                
+                            <td colspan="5" class="text-center text-muted py-4">No properties submitted yet.</td>
                           </tr>
-                
+                          {% endif %}
                         </tbody>
                 
                       </table>
@@ -588,4 +519,121 @@
             </div>
          </div>
     </div>
+{% block customjs %}
+<script>
+    $(document).ready(function(){
+    const csrfToken = $('input[name="csrf_token"]').first().val() || "";
+
+    function appendHostAmenity(amenity){
+      if (!amenity || !amenity.amenity_id){
+        return;
+      }
+      const checkboxId = `hostAmenity${amenity.amenity_id}`;
+      if (!document.getElementById(checkboxId)) {
+        const checkboxHtml = `
+          <div class="col-md-3 mb-3">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="amenities" id="${checkboxId}" value="${amenity.amenity_id}" checked>
+            <label class="form-check-label" for="${checkboxId}">${amenity.amenity_name}</label>
+          </div>
+          </div>
+        `;
+        $('#hostAmenitiesCheckboxes').prepend(checkboxHtml);
+      } else {
+        document.getElementById(checkboxId).checked = true;
+      }
+
+      const badgeId = `hostAmenityBadge${amenity.amenity_id}`;
+      if (!document.getElementById(badgeId)) {
+        $('#hostAmenitiesBadgeList').prepend(`<span class="amenity-badge" id="${badgeId}">${amenity.amenity_name}</span>`);
+      }
+    }
+
+    function saveHostAmenity(){
+      const amenityName = $('#hostAmenityName').val().trim();
+      const saveBtn = $('#hostAmenitySaveBtn');
+      if (!amenityName){
+        $('#responseMessage').html('<div class="alert alert-danger">Enter an amenity name first.</div>');
+        return;
+      }
+      saveBtn.prop('disabled', true).text('Saving...');
+      $.ajax({
+        url: '/host/amenities',
+        type: 'POST',
+        headers: { 'X-CSRFToken': csrfToken },
+        data: { amenity_name: amenityName, csrf_token: csrfToken },
+        success: function(response){
+          appendHostAmenity(response.amenity);
+          $('#hostAmenityName').val('');
+          $('#responseMessage').html(`<div class="alert alert-success">${response.message}</div>`);
+        },
+        error: function(xhr){
+          const message = xhr.responseJSON?.message || (xhr.status === 400 && String(xhr.responseText || '').toLowerCase().includes('csrf')
+            ? 'Session expired. Refresh this page and try again.'
+            : 'Unable to save amenity.');
+          $('#responseMessage').html(`<div class="alert alert-danger">${message}</div>`);
+        },
+        complete: function(){
+          saveBtn.prop('disabled', false).text('Save');
+        }
+      });
+    }
+
+    $('#hostAmenitySaveBtn').click(saveHostAmenity);
+    $('#hostAmenityAddBtnTop').click(saveHostAmenity);
+
+        $('#prop_stateid').change(function () {
+            let stateID = $(this).val();
+            if (!stateID) {
+                $('#prop_lgaid').html('<option value="">Select Local Government</option>');
+                return;
+            }
+            $.get('/get-lgas/' + stateID, function (response) {
+                let html = '<option value="">Select Local Government</option>';
+                response.forEach(function (lga) {
+                    html += `<option value="${lga.id}">${lga.name}</option>`;
+                });
+                $('#prop_lgaid').html(html);
+            });
+        });
+
+        $('#hostAddPropertyForm').submit(function(e){
+            e.preventDefault();
+            let form = document.getElementById('hostAddPropertyForm');
+            let formData = new FormData(form);
+          const submitBtn = $('button[form="hostAddPropertyForm"]');
+          submitBtn.prop('disabled', true).text('Submitting...');
+            $.ajax({
+                url: '/host/property/add',
+                type: 'POST',
+                data: formData,
+                cache: false,
+                processData: false,
+                contentType: false,
+                success: function(response){
+                    if (response.status === 'success'){
+                        $('#responseMessage').html(`<div class="alert alert-success">${response.message}</div>`);
+                        $('#hostAddPropertyForm')[0].reset();
+                        $('#prop_lgaid').html('<option value="">Select Local Government</option>');
+                    } else {
+                        $('#responseMessage').html(`<div class="alert alert-danger">${response.message}</div>`);
+                    }
+                },
+                error: function(xhr){
+                    let message = 'Something went wrong while submitting the property.';
+                    if (xhr.responseJSON && xhr.responseJSON.message){
+                        message = xhr.responseJSON.message;
+                  } else if (xhr.status === 400 && String(xhr.responseText || '').toLowerCase().includes('csrf')) {
+                    message = 'Session expired. Refresh this page and submit again.';
+                    }
+                    $('#responseMessage').html(`<div class="alert alert-danger">${message}</div>`);
+                },
+                complete: function(){
+                  submitBtn.prop('disabled', false).text('Submit For Review');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
 {% endblock %}

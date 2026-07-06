@@ -1,252 +1,147 @@
 {% extends "user/layout.html" %}
 {% block main_content %}
-        <div class="modal fade" id="loginmodal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-              <div class="modal-content">
-          
-                <div class="modal-header">
-                  <h1 class="modal-title fs-5" id="exampleModalLabel">
-                    Login
-                  </h1>
-          
-                  <button type="button" 
-                          class="btn-close" 
-                          data-bs-dismiss="modal"
-                          aria-label="Close">
-                  </button>
-                </div>
-          
-                <div class="modal-body">
-                    <form>
-                        <div class="mb-3">
-                          <label for="Email" class="form-label">Email address</label>
-                          <input type="email" class="form-control" id="email" aria-describedby="emailHelp">
-                        </div>
-                        <div class="mb-3">
-                          <label for="Password" class="form-label">Password</label>
-                          <input type="password" class="form-control" id="pwd">
-                        </div>
-                        <div class="text-end mb-3">
-                            <a href="forgot-password.html"
-                               class="text-decoration-none text-#4fc3dc">
-                               Forgot Password?
-                            </a>
-                            <button type="button" class="btn btn-primary">Login</button>
-                          </div>
-                      </form>
-                </div>
-          
-                <div class="modal-footer">
-                    <div class="modal-footer justify-content-center">
+<div class="container py-5">
+  <div class="mt-5">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+      <div>
+        <h2 class="fw-bold">{{ property.prop_title }}</h2>
+        <p class="text-muted mb-0">
+          {{ property.prop_city or property.prop_address or property.prop_category }},
+          {{ property.state.state_name if property.state else '' }}
+        </p>
+      </div>
+      <div>
+        {% if property.is_verified %}
+        <span class="verified-badge">Approved</span>
+        {% else %}
+        <span class="badge bg-secondary">Pending</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
 
-                        <p class="mb-0">
-                          New user?
-                          <a href="signup.html"
-                             class="text-decoration-none fw-bold text-#4fc3dc"
-                             data-bs-toggle="modal"
-                             data-bs-target="#signupmodal"
-                             data-bs-dismiss="modal"
-                             >
-                             Create an account
-                          </a>
-                        </p>
-                
-                      </div>
-                </div>
-          
-              </div>
-            </div>
+  {% set main_image = property.prop_mainimage_url %}
+  {% if main_image %}
+    {% if main_image.startswith('http') or main_image.startswith('/static/') %}
+      {% set main_image_src = main_image %}
+    {% else %}
+      {% set main_image_src = url_for('static', filename='uploads/properties/' ~ main_image) %}
+    {% endif %}
+  {% else %}
+    {% set main_image_src = url_for('static', filename='images/rooms/patrick-perkins-iRiVzALa4pI-unsplash.jpg') %}
+  {% endif %}
+
+  {% set gallery_images = property.images if property.images else [] %}
+
+  <div class="row mt-4">
+    <div class="col-lg-8">
+      <img class="img-fluid gallery-main w-100 mb-3" src="{{ main_image_src }}" alt="{{ property.prop_title }}">
+
+      {% if gallery_images %}
+      <div class="row g-3 mb-5">
+        {% for image in gallery_images[:3] %}
+        <div class="col-md-4">
+          {% if image.image_url.startswith('http') or image.image_url.startswith('/static/') %}
+            {% set thumb_src = image.image_url %}
+          {% else %}
+            {% set thumb_src = url_for('static', filename='uploads/properties/' ~ image.image_url) %}
+          {% endif %}
+          <img class="img-fluid gallery-thumb w-100" src="{{ thumb_src }}" alt="Gallery image">
         </div>
-        <div class="modal fade" id="signupmodal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-              <div class="modal-content">
-          
-                <div class="modal-header">
-                  <h1 class="modal-title fs-5" id="exampleModalLabel">
-                    Create Account
-                  </h1>
-          
-                  <button type="button" 
-                          class="btn-close" 
-                          data-bs-dismiss="modal"
-                          aria-label="Close">
-                  </button>
-                </div>
-          
-                <div class="modal-body">
-                    <form>
-                        <div class="mb-3">
-                            <label for="Fullname" class="form-label">Full Name</label>
-                            <input type="text" class="form-control" id="fullname" aria-describedby="fullname">
-                          </div>
-                        <div class="mb-3">
-                          <label for="Email" class="form-label">Email address</label>
-                          <input type="email" class="form-control" id="email" aria-describedby="emailHelp">
-                        </div>
-                        <div class="mb-3">
-                          <label for="Password" class="form-label">Password</label>
-                          <input type="password" class="form-control" id="pwd">
-                        </div>
-                        <div class="mb-3">
-                            <label for="Confirm Password" class="form-label">Confirm Password</label>
-                            <input type="password" class="form-control" id="confirmpwd">
-                          </div>
-                        <div class="text-end mb-3">
-                            <button type="button" class="btn btn-primary">Signup</button>
-                          </div>
-                      </form>
-                </div>
-          
-                <div class="modal-footer">
-                    <div class="modal-footer justify-content-center">
+        {% endfor %}
+      </div>
+      {% endif %}
 
-                        <p class="mb-0">
-                          Already a user?
-                          <a href="#"
-                             class="text-decoration-none fw-bold text-#4fc3dc"
-                             data-bs-toggle="modal"
-                            data-bs-target="#loginmodal"
-                            data-bs-dismiss="modal">
-                             Login
-                          </a>
-                        </p>
-                
-                      </div>
-                </div>
-          
-              </div>
+      <div class="bg-white p-4 rounded-4 shadow-sm mb-5">
+        <h4>About this Property</h4>
+        <p class="text-muted mb-0">
+          {{ property.prop_description or 'No property description available yet.' }}
+        </p>
+      </div>
+
+      <div class="row my-5">
+        <h4 class="mb-4">Amenities</h4>
+        {% if property.amenities %}
+          {% for amenity in property.amenities %}
+          <div class="col-md-3 col-6 mb-3">
+            <div class="amenities-box h-100 d-flex align-items-center justify-content-center">
+              <p class="mb-0 text-center">{{ amenity }}</p>
             </div>
           </div>
-   <div class="container py-5">
-        <div class="mb-4">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h2 class="fw-bold">Luxury 2 Bedrooms Apartment</h2>
-                    <p class="text-muted">Lekki Phase 1, Lagos</p>
-                </div>
-                <div>
-                    <span class="verified-badge">Verified</span>
-                </div>
-            </div>
-        </div>
-    <div class="row">
-        <div class="col-lg-8">
-                <img class="img-fluid gallery-main w-100 mb-3" src="/static/images/rooms/dada_design-9KGB4HspwsM-unsplash.jpg"  alt="">
-                <div class="row g-3 mb-5">
-                    <div class="col-md-4">
-                        <img class="img-fluid gallery-thumb w-100" src="/static/images/photo-1494526585095-c41746248156.jpg" alt="">
-                    </div>
-                    <div class="col-md-4">
-                        <img class="img-fluid gallery-thumb w-100" src="/static/images/photo-1484154218962-a197022b5858.jpg" alt="">
-                    </div>
-                    <div class="col-md-4">
-                        <img class="img-fluid gallery-thumb w-100" src="/static/images/photo-1505693416388-ac5ce068fe85.jpg" alt="">
-                    </div>
-                </div>
-                <div class="bg-white p-4 rounded-4 shadow-sm mb-5">
-                    <h4>About this Apartment</h4>
-                    <p class="text-muted">Beautiful fully furnished apartment located in Lekki.
-                        Includes fast WiFi, Netflix, swimming pool,
-                        24/7 electricity and security.</p>
-                </div>
-            <div class="row my-5">
-                <h4>Amenities</h4>
-                <div class="col-md-3">
-                    <div class="amenities-box">
-                        <i class="fa-solid fa-wifi mb-2"></i>
-                        <p class="mb-0">WIFI</p>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="amenities-box">
-                        <i class="fa-solid fa-water-ladder mb-3"></i>
-                        <p class="mb-0">Pool</p>
-                    </div>
-                </div>
-               <div class="col-md-3">
-                  <div class="amenities-box">
-                      <i class="fa-solid fa-car mb-3"></i>
-                      <p class="mb-0">Parking</p>
-                  </div>
-               </div>
-               <div class="col-md-3">
-                    <div class="amenities-box">
-                        <i class="fa-solid fa-snowflake mb-3"></i>
-                        <p class="mb-0">Air Conditioning</p>
-                    </div>
-               </div>
-            </div>
-                <div class="host-box">
-                <div  class="d-flex align-items-center">
-                    <img src="/static/images/randomuser.jpg" alt="" width="70" height="70" class="rounded-circle me-3">
-                </div>
-                <h3 class="mb-1">Hosted by Emmanuel</h3>
-                <small class="text-muted">
-                 Supper .  Verified
-                </small>
-                </div>
-       </div>
-       <div class="col-lg-4">
-        <div class="booking-card">
-          <h3 class="fw-bold mb-3">
-            ₦45,000
-            <small class="fs-6 text-muted">
-              /night
+          {% endfor %}
+        {% else %}
+          <div class="col-12">
+            <p class="text-muted">No amenities listed for this property yet.</p>
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="host-box p-4 rounded-4 shadow-sm bg-white mb-4">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <img src="{{ property.user.user_profileimage or '/static/images/randomuser.jpg' }}" alt="Host" width="70" height="70" class="rounded-circle">
+          <div>
+            <h4 class="mb-1">
+              Hosted by {{ property.user.user_firstname }} {{ property.user.user_lastname }}
+            </h4>
+            <small class="text-muted">
+              {{ 'Verified Host' if property.user.is_verified else 'Host Pending Verification' }}
             </small>
-          </h3>
-          <div class="mb-3">
-            <label class="form-label">
-              Check In
-            </label>
-            <input type="date"
-            class="form-control">
           </div>
-          <div class="mb-3">
-            <label class="form-label">
-              Check Out
-            </label>
-            <input type="date"
-            class="form-control">
-          </div>
-          <div class="mb-3">
-            <label class="form-label">
-              Guests
-            </label>
-            <select class="form-select">
-              <option>2 Guests</option>
-              <option>4 Guests</option>
-            </select>
-          </div>
-          <a href="/booking"
-          class="searchbtn w-100 btn-lg">
-            Reserve Now
-          </a>
-          <hr>
-          <div class="d-flex justify-content-between">
-            <span>
-              ₦45,000 × 2 nights
-            </span>
-            <span>
-              ₦90,000
-            </span>
-          </div>
-          <div class="d-flex justify-content-between mt-2">
-            <span>
-              Service Fee
-            </span>
-            <span>
-              ₦5,000
-            </span>
-          </div>
-          <hr>
-          <div class="d-flex justify-content-between fw-bold">
-            <span>Total</span>
-            <span>₦95,000</span>
-          </div>
+        </div>
+        <p class="text-muted mb-0">Contact: {{ property.user.user_phoneno }}</p>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="booking-card">
+        <h3 class="fw-bold mb-3">
+          ₦{{ '{:,.0f}'.format(property.price_per_night) }}
+          <small class="fs-6 text-muted">/night</small>
+        </h3>
+
+        <div class="mb-3">
+          <label class="form-label">Check In</label>
+          <input type="date" class="form-control" value="{{ search_values.checkin_date if search_values else '' }}">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Check Out</label>
+          <input type="date" class="form-control" value="{{ search_values.checkout_date if search_values else '' }}">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Guests</label>
+          <select class="form-select">
+            {% for guest in range(1, (property.max_guest or 1) + 1) %}
+            <option value="{{ guest }}" {% if search_values and search_values.guests == guest|string %}selected{% endif %}>{{ guest }} Guest{{ '' if guest == 1 else 's' }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <a href="{{ url_for('booking', prop_id=property.prop_id, checkin_date=(search_values.checkin_date if search_values else ''), checkout_date=(search_values.checkout_date if search_values else ''), guests=(search_values.guests if search_values else '')) }}" class="searchbtn w-100 btn-lg">
+          Reserve Now
+        </a>
+
+        <hr>
+
+        <div class="d-flex justify-content-between">
+          <span>₦{{ '{:,.0f}'.format(property.price_per_night) }} × {{ nights }} night{{ '' if nights == 1 else 's' }}</span>
+          <span>₦{{ '{:,.0f}'.format(subtotal) }}</span>
+        </div>
+        <div class="d-flex justify-content-between mt-2">
+          <span>Service Fee</span>
+          <span>₦{{ '{:,.0f}'.format(service_fee) }}</span>
+        </div>
+
+        <hr>
+
+        <div class="d-flex justify-content-between fw-bold">
+          <span>Total</span>
+          <span>₦{{ '{:,.0f}'.format(total_amount) }}</span>
         </div>
       </div>
-   </div>
+    </div>
   </div>
-   </div>
-    {% endblock %}
-   
+</div>
+{% endblock %}
+

@@ -1,319 +1,109 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Book affordable accommodation We Offer verified Booking,  Reservations, Bespoke airport transfer Packages & Much More. Book..." >
-	<meta name="robot" content="noindex, nofollow">
-	<meta name="author" content="Debby Sinkalu">
-	<link rel="preconnect" href="https://fonts.googleapis.com">
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-	<link href="/static/bootstrap/css/bootstrap.css" rel="stylesheet">
-    <link rel="stylesheet" href="/static/fontawesome/css/all.min.css">
-	<link href="/static/starter.py" rel="stylesheet">
-    <title>Verified Short-let Apartments</title>
-</head>
-<body>
-    <div class="container-fluid">
-        {% include "include/header.html" %}
-        <div class="modal fade" id="loginmodal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-              <div class="modal-content">
-          
-                <div class="modal-header">
-                  <h1 class="modal-title fs-5" id="exampleModalLabel">
-                    Login
-                  </h1>
-          
-                  <button type="button" 
-                          class="btn-close" 
-                          data-bs-dismiss="modal"
-                          aria-label="Close">
-                  </button>
-                </div>
-          
-                <div class="modal-body">
-                    <form>
-                        <div class="mb-3">
-                          <label for="Email" class="form-label">Email address</label>
-                          <input type="email" class="form-control" id="email" aria-describedby="emailHelp">
-                        </div>
-                        <div class="mb-3">
-                          <label for="Password" class="form-label">Password</label>
-                          <input type="password" class="form-control" id="pwd">
-                        </div>
-                        <div class="text-end mb-3">
-                            <a href="forgot-password.html"
-                               class="text-decoration-none text-#4fc3dc">
-                               Forgot Password?
-                            </a>
-                            <button type="button" class="btn btn-primary">Login</button>
-                          </div>
-                      </form>
-                </div>
-          
-                <div class="modal-footer">
-                    <div class="modal-footer justify-content-center">
+{% extends "user/layout.html" %}
+{% block main_content %}
+<div class="container py-5 mt-5">
+  {% set property = booking_detail.property %}
+  {% set main_image = property.prop_mainimage_url if property else '' %}
+  {% if main_image %}
+    {% if main_image.startswith('http') or main_image.startswith('/static/') %}
+      {% set main_image_src = main_image %}
+    {% else %}
+      {% set main_image_src = url_for('static', filename='uploads/properties/' ~ main_image) %}
+    {% endif %}
+  {% else %}
+    {% set main_image_src = url_for('static', filename='images/rooms/patrick-perkins-iRiVzALa4pI-unsplash.jpg') %}
+  {% endif %}
 
-                        <p class="mb-0">
-                          New user?
-                          <a href="signup.html"
-                             class="text-decoration-none fw-bold text-#4fc3dc"
-                             data-bs-toggle="modal"
-                             data-bs-target="#signupmodal"
-                             data-bs-dismiss="modal"
-                             >
-                             Create an account
-                          </a>
-                        </p>
-                
-                      </div>
-                </div>
-          
-              </div>
-            </div>
+  <div class="row justify-content-center">
+    <div class="col-lg-9">
+      <div class="confirmation-card">
+        <div class="text-center mb-4">
+          <div class="success-icon mb-4">
+            <i class="fa-solid fa-check"></i>
+          </div>
+          <h1 class="fw-bold text-success">Booking Confirmed</h1>
+          <p class="text-muted fs-5">Your reservation has been successfully completed</p>
         </div>
-        <div class="modal fade" id="signupmodal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-              <div class="modal-content">
-          
-                <div class="modal-header">
-                  <h1 class="modal-title fs-5" id="exampleModalLabel">
-                    Create Account
-                  </h1>
-          
-                  <button type="button" 
-                          class="btn-close" 
-                          data-bs-dismiss="modal"
-                          aria-label="Close">
-                  </button>
-                </div>
-          
-                <div class="modal-body">
-                    <form>
-                        <div class="mb-3">
-                            <label for="Fullname" class="form-label">Full Name</label>
-                            <input type="text" class="form-control" id="fullname" aria-describedby="fullname">
-                          </div>
-                        <div class="mb-3">
-                          <label for="Email" class="form-label">Email address</label>
-                          <input type="email" class="form-control" id="email" aria-describedby="emailHelp">
-                        </div>
-                        <div class="mb-3">
-                          <label for="Password" class="form-label">Password</label>
-                          <input type="password" class="form-control" id="pwd">
-                        </div>
-                        <div class="mb-3">
-                            <label for="Confirm Password" class="form-label">Confirm Password</label>
-                            <input type="password" class="form-control" id="confirmpwd">
-                          </div>
-                        <div class="text-end mb-3">
-                            <button type="button" class="btn btn-primary">Signup</button>
-                          </div>
-                      </form>
-                </div>
-          
-                <div class="modal-footer">
-                    <div class="modal-footer justify-content-center">
 
-                        <p class="mb-0">
-                          Already a user?
-                          <a href="#"
-                             class="text-decoration-none fw-bold text-#4fc3dc"
-                             data-bs-toggle="modal"
-                            data-bs-target="#loginmodal"
-                            data-bs-dismiss="modal">
-                             Login
-                          </a>
-                        </p>
-                
-                      </div>
-                </div>
-          
+        <div class="alert alert-success text-center mb-5">
+          <strong>Booking ID:</strong>
+          BK-{{ booking_detail.booking_detail_id }}
+          {% if payment %}
+            <span class="ms-2">| Payment Ref: {{ payment.advert_payment_reference }}</span>
+          {% endif %}
+        </div>
+
+        <div class="row g-4 align-items-center mb-5">
+          <div class="col-md-5">
+            <img src="{{ main_image_src }}" alt="{{ property.prop_title if property else 'Property' }}" class="img-fluid property-image w-100">
+          </div>
+          <div class="col-md-7">
+            <h3 class="fw-bold">{{ property.prop_title if property else 'Selected Property' }}</h3>
+            <p class="text-muted mb-3">{{ property.prop_city or property.prop_address or property.prop_category if property else '' }}</p>
+            <div class="d-flex gap-3 flex-wrap">
+              <span class="badge verified2-badge p-2">{{ 'Verified Property' if property and property.is_verified else 'Pending Verification' }}</span>
+              <span class="badge verified-badge p-2">Payment {{ booking_detail.booking_status|title }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+          <div class="col-md-6">
+            <div class="detail-box h-100">
+              <h4 class="mb-4">Stay Details</h4>
+              <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted">Check In</span>
+                <span>{{ booking_detail.checkin_date.strftime('%d %b %Y') }}</span>
+              </div>
+              <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted">Check Out</span>
+                <span>{{ booking_detail.checkout_date.strftime('%d %b %Y') }}</span>
+              </div>
+              <div class="d-flex justify-content-between mb-4">
+                <span class="text-muted">Guests</span>
+                <strong>{{ booking_detail.guests }} Guest{{ '' if booking_detail.guests == 1 else 's' }}</strong>
               </div>
             </div>
           </div>
-    <div class="container py-5">
-          <div class="row justify-content-center">
-                <div class="col-lg-9">
-                    <div class="confirmation-card">
-                        <div class="text-center mb-4">
-                            <div class="success-icon mb-4">
-                                <i class="fa-solid fa-check"></i>
-                            </div>
-                            <h1 class="fw-bold text-success">
-                                Booking Confirmed
-                            </h1>
-                            <p class="text-muted fs-5">
-                                Your reservation has been successfully completed
-                            </p>
-                        </div>
-                        <div class="alert alert-success text-center mb-5">
-                            <strong>
-                                Bookin: ID
-                            </strong>
-                            SH-2025-19873
-                        </div>
-                        <div class="row g-4 align-items-center mb-5">
-                            <div class="col-md-5">
-                                <img src="/static/images/photo-1505693416388-ac5ce068fe85.jpg" alt="" class="img-fluid property-image w-100">
-                            </div>
-                            <div class="col-md-7">
-                                <h3 class="fw-bold">
-                                    Luxury 2 Bedroom Apartment
-                                </h3>
-                                <p class="text-muted mb3">
-                                    Lekki Phase 1, Lagos
-                                </p>
-                                <div class="d-flex gap-3 flex-wrap">
-                                    <span class="badge verified2-badge p-2">
-                                        Verified Property
-                                    </span>
-                                    <span class="badge verified-badge p-2">
-                                        Instant Booking
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row g-4 mb-4">
-                            <div class="col-md-6">
-                                <div class="detail-box h-100">
-                                    <h4 class="mb-4">
-                                        Stay Details
-                                    </h4>
-                                    <div class="d-flex justify-content-between mb-2">
-          
-                                        <span class="text-muted">
-                                          Check In
-                                        </span>
-                              
-                                        <span>
-                                          12 May 2025
-                                        </span>
-                              
-                                      </div>
-                              
-                                      <div class="d-flex justify-content-between mb-2">
-                              
-                                        <span class="text-muted">
-                                          Check Out
-                                        </span>
-                              
-                                        <span>
-                                          14 May 2025
-                                        </span>
-                              
-                                      </div>
-                              
-                                      <div class="d-flex justify-content-between mb-4">
-                              
-                                        <span class="text-muted">
-                                          Guests
-                                        </span>
-                              
-                                        <strong>
-                                          2 Guests
-                                        </strong>
-                              
-                                      </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="detail-box h-100">
-                                    <h5 class="mb-3">
-                                        Payment Summary
-                                      </h5>
-                              
-                                      <div class="d-flex justify-content-between mb-2">
-                              
-                                        <span>
-                                         Apartment Fee
-                                        </span>
-                              
-                                        <span>
-                                          ₦90,000
-                                        </span>
-                              
-                                      </div>
-                              
-                                      <div class="d-flex justify-content-between mb-2">
-                              
-                                        <span>
-                                          Cleaning Fee
-                                        </span>
-                              
-                                        <span>
-                                          ₦5,000
-                                        </span>
-                              
-                                      </div>
-                              
-                                      <div class="d-flex justify-content-between mb-2">
-                              
-                                        <span>
-                                          Service Fee
-                                        </span>
-                              
-                                        <strong>
-                                          ₦8,000
-                                        </strong>
-                              
-                                      </div>
-                              
-                                      <hr>
-                                      <div class="d-flex justify-content-between">
-          
-                                        <span class="fw-bold">Total</span>
-                              
-                                        <span class="fw-bold text-success">₦98,000</span>
-                              
-                                      </div>
-                                </div>
-                            </div>
-                            <div class="detail-box mb-5">
-                                <h5 class="mb-3">
-                                    Check-in instructions
-                                </h5>
-                                <p class="text-muted mb-2">
-                                    Please contact the host an hour before arrival
-                                </p>
-                                <p class="text-muted mb-2">
-                                    Check-in start from 2:00 pm
-                                </p>
-                                <p class="text-muted mb-0">
-                                    Access code and apartment directions will be sent to you email
-                                </p>
-                            </div>
-                            <div class="row g-3">
-                                <div class="col-md-4">
-                                    <a href="#" class="btn btn-outline-success action-btn w-100">
-                                        <i class="fa-solid fa-download me-2"></i>
-                                        Download Receipt
-                                    </a>
-                                </div>
-                                <div class="col-md-4">
-                                    <a href="#" class="btn btn-outline-primary action-btn w-100">
-                                        <i class="fa-solid fa-download me-2"></i>
-                                        Contact Host
-                                    </a>
-                                </div>
-                                <div class="col-md-4">
-                                    <a href="#" class="btn btn-outline-warning action-btn w-100">
-                                        <i class="fa-solid fa-download me-2"></i>
-                                        Back to Home
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
+          <div class="col-md-6">
+            <div class="detail-box h-100">
+              <h5 class="mb-3">Payment Summary</h5>
+              <div class="d-flex justify-content-between mb-2">
+                <span>Apartment Fee</span>
+                <span>₦{{ '{:,.0f}'.format(subtotal) }}</span>
+              </div>
+              <div class="d-flex justify-content-between mb-2">
+                <span>Service Fee</span>
+                <span>₦{{ '{:,.0f}'.format(service_fee) }}</span>
+              </div>
+              <hr>
+              <div class="d-flex justify-content-between">
+                <span class="fw-bold">Total</span>
+                <span class="fw-bold text-success">₦{{ '{:,.0f}'.format(total_amount) }}</span>
+              </div>
+            </div>
           </div>
-   </div>
-   {% include "include/footer.html" %}
+        </div>
+
+        <div class="detail-box mb-4">
+          <h5 class="mb-3">Check-in Instructions</h5>
+          <p class="text-muted mb-2">Please contact the host an hour before arrival.</p>
+          <p class="text-muted mb-2">Check-in starts from 2:00 pm.</p>
+          <p class="text-muted mb-0">Access details will be shared with you ahead of arrival.</p>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <a href="{{ url_for('listing') }}" class="btn btn-outline-primary action-btn w-100">Browse More Properties</a>
+          </div>
+          <div class="col-md-6">
+            <a href="{{ url_for('home') }}" class="btn btn-outline-success action-btn w-100">Back to Home</a>
+          </div>
+        </div>
+      </div>
     </div>
-    <script src="/static/bootstrap/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+  </div>
+</div>
+{% endblock %}
 
 

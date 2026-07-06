@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SelectField, SubmitField
+from wtforms import StringField, PasswordField, SelectField, SubmitField, DateField, IntegerField, TextAreaField, BooleanField
 from wtforms.validators import DataRequired, Email, EqualTo, Length
 
 
@@ -40,5 +40,20 @@ class AdminLoginForm(FlaskForm):
     password = PasswordField("Password",validators=[DataRequired()])
 
     login = SubmitField("Login")
+
+
+class BookingDetailsForm(FlaskForm):
+     full_name = StringField("Full Name", validators=[DataRequired(), Length(min=3, max=200)])
+     email = StringField("Email Address", validators=[DataRequired(), Email()])
+     phone = StringField("Phone Number", validators=[DataRequired(), Length(min=7, max=20)])
+     checkin_date = DateField("Check In", format="%Y-%m-%d", validators=[DataRequired()])
+     checkout_date = DateField("Check Out", format="%Y-%m-%d", validators=[DataRequired()])
+     guests = SelectField("Number of Guests", coerce=int, validators=[DataRequired()])
+     special_requests = TextAreaField("Special Requests", validators=[Length(max=1000)])
+     terms_agreed = BooleanField(
+          "I agree to the booking terms and cancellation policy",
+          validators=[DataRequired(message="You must agree to the terms and conditions.")],
+     )
+     submit = SubmitField("Proceed to Payment")
 
 

@@ -1,6 +1,7 @@
 from decimal import Decimal
+from sqlalchemy.orm import joinedload
 
-from pkg.models import Admin, Booking, Property, User, db
+from pkg.models import Admin, BookingDetail, BookingPayment, Property, User, db
 
 
 class AdminDashboardService:
@@ -13,8 +14,40 @@ class AdminDashboardService:
         total_users = User.query.count()
         verified_hosts = User.query.filter_by(user_role="host", is_verified=True).count()
         total_properties = Property.query.count()
+
+        bookings_query = (
+            BookingDetail.query.options(
+                joinedload(BookingDetail.user),
+                joinedload(BookingDetail.property),
+            )
+            .order_by(BookingDetail.created_at.desc())
+        )
+        all_bookings = bookings_query.all()
+
+        payments_query = (
+            BookingPayment.query.options(
+                joinedload(BookingPayment.user),
+                joinedload(BookingPayment.booking_detail),
+                joinedload(BookingPayment.booking_detail).joinedload(BookingDetail.property),
+            )
+            .order_by(BookingPayment.booking_payment_date.desc())
+        )
+        all_payments = payments_query.all()
+
         total_revenue = sum(
-            (booking.total_amount or Decimal("0")) for booking in Booking.query.filter(Booking.booking_status.in_(["confirmed", "completed"]))
+            (payment.booking_amount or Decimal("0"))
+            for payment in all_payments
+            if payment.booking_payment_status == "paid"
+        )
+
+        total_bookings = len(all_bookings)
+        paid_bookings = sum(1 for booking in all_bookings if booking.booking_status == "paid")
+        pending_payment_bookings = sum(
+            1 for booking in all_bookings if booking.booking_status == "pending_payment"
+        )
+        paid_payments = sum(1 for payment in all_payments if payment.booking_payment_status == "paid")
+        pending_payments = sum(
+            1 for payment in all_payments if payment.booking_payment_status == "pending"
         )
 
         properties = (
@@ -33,17 +66,8 @@ class AdminDashboardService:
             .limit(5)
             .all()
         )
-        recent_bookings = (
-            Booking.query.order_by(Booking.created_at.desc())
-            .limit(5)
-            .all()
-        )
-        recent_payments = (
-            Booking.query.filter(Booking.booking_status.in_(["confirmed", "completed"]))
-            .order_by(Booking.created_at.desc())
-            .limit(5)
-            .all()
-        )
+        recent_bookings = all_bookings
+        recent_payments = all_payments
 
         return {
             "deets": deets,
@@ -53,6 +77,11 @@ class AdminDashboardService:
                 "verified_hosts": verified_hosts,
                 "total_properties": total_properties,
                 "total_revenue": total_revenue,
+                "total_bookings": total_bookings,
+                "paid_bookings": paid_bookings,
+                "pending_payment_bookings": pending_payment_bookings,
+                "paid_payments": paid_payments,
+                "pending_payments": pending_payments,
             },
             "pending_hosts": pending_hosts,
             "pending_properties": pending_properties,
@@ -90,6 +119,8 @@ class AdminDashboardService:
         property_item.is_verified = verified
         if verified:
             property_item.prop_availability_status = "available"
+        else:
+            property_item.prop_availability_status = "inactive"
         self.db.session.commit()
         return property_item
 

@@ -192,7 +192,17 @@
                             <div class="col-md-6 mb-4">
                                 <div class="card listing-card h-100">
                                     <div class="position-relative">
-                                        <img class="img-fluid card-img-top listing-image" src="{{ prop.prop_mainimage_url or '/static/images/rooms/patrick-perkins-iRiVzALa4pI-unsplash.jpg' }}" alt="{{ prop.prop_title }}">
+                                        {% set main_image = prop.prop_mainimage_url %}
+                                        {% if main_image %}
+                                            {% if main_image.startswith('http') or main_image.startswith('/static/') %}
+                                                {% set image_src = main_image %}
+                                            {% else %}
+                                                {% set image_src = url_for('static', filename='uploads/properties/' ~ main_image) %}
+                                            {% endif %}
+                                        {% else %}
+                                            {% set image_src = url_for('static', filename='images/rooms/patrick-perkins-iRiVzALa4pI-unsplash.jpg') %}
+                                        {% endif %}
+                                        <img class="img-fluid card-img-top listing-image" src="{{ image_src }}" alt="{{ prop.prop_title }}">
                                         <div class="wishlist-btn">
                                             <i class="fa-regular fa-heart"></i>
                                         </div>
@@ -200,7 +210,7 @@
                                     <div class="card-body d-flex flex-column">
                                         <div class="d-flex justify-content-between align-items-center mb-2">
                                             {% if prop.is_verified %}
-                                                <span class="verified-badge">Verified</span>
+                                                <span class="verified-badge">Approved</span>
                                             {% else %}
                                                 <span class="badge bg-secondary">Pending</span>
                                             {% endif %}
@@ -213,18 +223,25 @@
                                             </small>
                                         </div>
                                         <h4 class="card-title">{{ prop.prop_title }}</h4>
-                                        <p class="text-muted mb-2">{{ prop.prop_city or prop.prop_address or prop.prop_category }}, {{ prop.state or '' }}</p>
+                                        <p class="text-muted mb-2">{{ prop.prop_city or prop.prop_address or prop.prop_category }}, {{ prop.state.state_name if prop.state else '' }}</p>
                                         <div class="d-flex gap-3 small text-muted mb-3">
                                             <span><i class="fa-solid fa-bed"></i> {{ prop.bedrooms or 0 }} Beds</span>
                                             <span><i class="fa-solid fa-bath"></i> {{ prop.bathrooms or 0 }} Baths</span>
                                             <span><i class="fa-solid fa-user"></i> {{ prop.max_guest or 1 }} Guests</span>
                                         </div>
+                                        {% if prop.amenities %}
+                                        <div class="mb-3">
+                                            {% for amenity in prop.amenities[:3] %}
+                                            <span class="badge bg-light text-dark me-1">{{ amenity }}</span>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
                                         <div class="mt-auto d-flex justify-content-between align-items-center">
                                             <div>
                                                 <span class="price">₦{{ '{:,.0f}'.format(prop.price_per_night) if prop.price_per_night else '0' }}</span>
                                                 <small>night</small>
                                             </div>
-                                            <a href="{{ url_for('properties_details') }}?prop_id={{ prop.prop_id }}" class="searchbtn">View</a>
+                                            <a href="{{ url_for('property_details', prop_id=prop.prop_id, checkin_date=search_values.checkin_date, checkout_date=search_values.checkout_date, guests=search_values.guests) }}" class="searchbtn">View</a>
                                         </div>
                                     </div>
                                 </div>

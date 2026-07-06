@@ -1,9 +1,10 @@
 from flask import render_template, request, url_for, redirect, flash, session, jsonify, current_app
 from decimal import Decimal
 import os, uuid
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import check_password_hash
+from sqlalchemy import func
 from pkg import app
-from pkg.forms import AdminRegisterForm, AdminLoginForm
+from pkg.forms import AdminLoginForm
 from pkg.models import Admin, db, Property, PropertyType, PropertyState, PropertyLGA, PropertyAmenity, Amenity, PropertyImage, User, Booking
 from pkg.admin_service import AdminDashboardService
 
@@ -24,28 +25,7 @@ def admin_dashboard():
         **dashboard_context
     )
 
-@app.route('/admin-register/', methods=['GET', 'POST'])
-def admin_register():
-    register = AdminRegisterForm()
 
-    if register.validate_on_submit():
-
-        hashed = generate_password_hash(register.password.data)
-
-        admin = Admin(
-            admin_firstname=register.firstname.data,
-            admin_lastname=register.lastname.data,
-            admin_email=register.email.data,
-            admin_password=hashed,
-        )
-
-        db.session.add(admin)
-        db.session.commit()
-
-        flash("Account created successfully!")
-        return redirect(url_for("admin_login"))
-
-    return render_template("admin/admin_registration.html", register=register)
 
 @app.route('/admin-login/', methods=['GET', 'POST'])
 def admin_login():
@@ -59,6 +39,8 @@ def admin_login():
 
         if deets and check_password_hash(deets.admin_password, password):
             session['adminonline'] = deets.admin_id
+            session.pop('useronline', None)
+            session.pop('userrole', None)
             return redirect(url_for('admin_dashboard'))
 
         flash("Invalid email or password", "errormsg")
@@ -144,6 +126,7 @@ def save_property():
         prop_category = request.form.get("prop_category")
         prop_stateid = request.form.get("prop_stateid")
         prop_lgaid = request.form.get("prop_lgaid")
+        prop_city = request.form.get("prop_city", "").strip()
         prop_address = request.form.get("prop_address", "").strip()
         price_per_night = request.form.get("price_per_night")
         bedrooms = request.form.get("bedrooms")
@@ -153,7 +136,7 @@ def save_property():
             "prop_availability_status",
             "available"
         )
-
+        publish_now = request.form.get("publish_now") in ("on", "true", "1")
 
         if not prop_title:
             return jsonify({
@@ -193,6 +176,7 @@ def save_property():
 
             prop_title=prop_title,
             prop_description=prop_description,
+            prop_city=prop_city,
 
             prop_typeid=int(prop_typeid),
             prop_stateid=int(prop_stateid),
@@ -208,8 +192,7 @@ def save_property():
             max_guest=int(max_guest) if max_guest else 1,
 
             prop_availability_status=prop_availability_status,
-
-            is_verified=False
+            is_verified=publish_now
 
         )
 
@@ -320,6 +303,58 @@ def get_lgas(state_id):
         })
 
     return jsonify(data)
+
+
+@app.route('/admin/amenities', methods=['GET', 'POST'])
+def admin_amenities():
+    if 'adminonline' not in session:
+        return jsonify({"status": "error", "message": "Unauthorized"}), 401
+
+    if request.method == 'GET':
+        amenities = Amenity.query.order_by(Amenity.amenity_name.asc()).all()
+        return jsonify(
+            {
+                "status": "success",
+                "amenities": [
+                    {"amenity_id": amenity.amenity_id, "amenity_name": amenity.amenity_name}
+                    for amenity in amenities
+                ],
+            }
+        )
+
+    amenity_name = (request.form.get('amenity_name') or '').strip()
+    if not amenity_name:
+        return jsonify({"status": "error", "message": "Amenity name is required."}), 400
+
+    existing = Amenity.query.filter(
+        func.lower(Amenity.amenity_name) == amenity_name.lower()
+    ).first()
+    if existing:
+        return jsonify(
+            {
+                "status": "success",
+                "message": "Amenity already exists.",
+                "amenity": {
+                    "amenity_id": existing.amenity_id,
+                    "amenity_name": existing.amenity_name,
+                },
+            }
+        ), 200
+
+    amenity = Amenity(amenity_name=amenity_name)
+    db.session.add(amenity)
+    db.session.commit()
+
+    return jsonify(
+        {
+            "status": "success",
+            "message": "Amenity added successfully.",
+            "amenity": {
+                "amenity_id": amenity.amenity_id,
+                "amenity_name": amenity.amenity_name,
+            },
+        }
+    ), 201
 
 
 @app.route('/admin/properties/<int:property_id>', methods=['DELETE'])
