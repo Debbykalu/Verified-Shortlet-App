@@ -23,22 +23,32 @@ class DashboardService:
     def __init__(self):
         self.db = db
 
-    def get_user_context(self, user_id):
+    def get_user_context(self, user_id, payments_page=1, payments_per_page=5):
         user = User.query.get(user_id)
         if not user:
             return None
 
-        bookings = (
+        bookings_query = (
             Booking.query.filter_by(booking_userid=user_id)
             .order_by(Booking.created_at.desc())
-            .all()
         )
 
-        total_bookings = len(bookings)
+        bookings_pagination = bookings_query.paginate(
+            page=payments_page,
+            per_page=payments_per_page,
+            error_out=False,
+        )
+
+        bookings = bookings_pagination.items
+
+        total_bookings = bookings_query.count()
+        completed_bookings = bookings_query.filter(
+            Booking.booking_status.in_(("confirmed", "completed"))
+        ).all()
+
         total_spent = sum(
             (booking.total_amount or Decimal("0"))
-            for booking in bookings
-            if booking.booking_status in ("confirmed", "completed")
+            for booking in completed_bookings
         )
         active_reservations = Booking.query.filter_by(
             booking_userid=user_id,
@@ -48,6 +58,7 @@ class DashboardService:
         return {
             "deets": user,
             "bookings": bookings,
+            "bookings_pagination": bookings_pagination,
             "stats": {
                 "total_bookings": total_bookings,
                 "active_reservations": active_reservations,
@@ -56,18 +67,32 @@ class DashboardService:
             },
         }
 
-    def get_host_context(self, user_id):
+    def get_host_context(
+        self,
+        user_id,
+        reservations_page=1,
+        reservations_per_page=5,
+        properties_page=1,
+        properties_per_page=5,
+    ):
         user = User.query.get(user_id)
         if not user:
             return None
 
-        host_properties = (
+        host_properties_query = (
             Property.query.filter_by(prop_userid=user_id)
             .order_by(Property.prop_id.desc())
-            .all()
         )
 
-        host_bookings = (
+        host_properties_pagination = host_properties_query.paginate(
+            page=properties_page,
+            per_page=properties_per_page,
+            error_out=False,
+        )
+
+        host_properties = host_properties_pagination.items
+
+        host_bookings_query = (
             Booking.query.options(
                 joinedload(Booking.user),
                 joinedload(Booking.property),
@@ -75,13 +100,21 @@ class DashboardService:
             .join(Property, Booking.booking_propid == Property.prop_id)
             .filter(Property.prop_userid == user_id)
             .order_by(Booking.created_at.desc())
-            .all()
         )
 
-        pending_properties = [p for p in host_properties if not p.is_verified]
+        host_bookings_pagination = host_bookings_query.paginate(
+            page=reservations_page,
+            per_page=reservations_per_page,
+            error_out=False,
+        )
+
+        host_bookings = host_bookings_pagination.items
+        all_host_bookings = host_bookings_query.all()
+
+        pending_properties = host_properties_query.filter_by(is_verified=False).count()
         confirmed_earnings = sum(
             (booking.total_amount or Decimal("0"))
-            for booking in host_bookings
+            for booking in all_host_bookings
             if booking.booking_status in ("confirmed", "completed")
         )
 
@@ -92,11 +125,13 @@ class DashboardService:
         return {
             "deets": user,
             "host_properties": host_properties,
-            "recent_reservations": host_bookings[:5],
+            "recent_reservations": host_bookings,
+            "host_properties_pagination": host_properties_pagination,
+            "host_reservations_pagination": host_bookings_pagination,
             "stats": {
-                "total_properties": len(host_properties),
-                "pending_properties": len(pending_properties),
-                "reservations": len(host_bookings),
+                "total_properties": host_properties_query.count(),
+                "pending_properties": pending_properties,
+                "reservations": host_bookings_query.count(),
                 "earnings": confirmed_earnings,
             },
             "property_types": property_types,
