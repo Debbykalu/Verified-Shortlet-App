@@ -104,7 +104,7 @@
                          <i class="fa-solid fa-calendar-check"></i>
                      </div>
                      <h3 class="fw-bold">
-                         12
+                         {{ stats.total_bookings }}
                      </h3>
                      <p class="text-muted mb-0">
                          Total Bookings
@@ -117,10 +117,10 @@
                          <i class="fa-solid fa-heart"></i>
                      </div>
                      <h3 class="fw-bold">
-                         6
+                         {{ stats.saved_properties }}
                      </h3>
                      <p class="text-muted mb-0">
-                         Save Apartment
+                         Saved Properties
                      </p>
                  </div>
                      </div>
@@ -130,7 +130,7 @@
                          <i class="fa-solid fa-wallet"></i>
                      </div>
                      <h3 class="fw-bold">
-                         N850,700
+                         ₦{{ "{:,.0f}".format(stats.total_spent or 0) }}
                      </h3>
                      <p class="text-muted mb-0">
                          Total Spent
@@ -218,101 +218,71 @@
                      </div>
                                 </div>
                                 <div class="row g-4 mb-5">
+                                    {% for booking in bookings %}
                                     <div class="col-lg-6">
-                        <div class="booking-card">
-                            <div class="position-relative">
-                                <img src="images/photo-1505693416388-ac5ce068fe85.jpg" alt="" class="img-fluid booking-image w-100">
-                                <span class="badge bg-success status-badge">
-                                    Active
-                                </span>
-                            </div>
-                            <div class="p-4">
-                                <h3 class="fw-bold">
-                                    Luxury Apartment
-                                </h3>
-                                <p class="text-muted">
-                                    Lekki Phase 1,Lagos
-                                </p>
-                                <div class="row mb-4">
-                                    <div class="col-md-6">
-                                        <small class="text-muted d-block">
-                                            Check-In
-                                        </small>
-                                        <strong>
-                                            12 May 2025
-                                        </strong>
+                                        <div class="booking-card">
+                                            <div class="p-4">
+                                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                                    <h5 class="fw-bold mb-0">#BK{{ booking.booking_detail_id }}</h5>
+                                                    <span class="badge {{ 'bg-success' if booking.booking_status == 'paid' else 'bg-warning text-dark' if booking.booking_status == 'pending_payment' else 'bg-danger' }} status-badge">
+                                                        {{ booking.booking_status.replace('_', ' ')|title }}
+                                                    </span>
+                                                </div>
+                                                <h6 class="fw-semibold mb-1">
+                                                    {{ booking.property.prop_title if booking.property else 'Property' }}
+                                                </h6>
+                                                <p class="text-muted mb-3">
+                                                    {{ booking.property.prop_city if booking.property else 'N/A' }}
+                                                </p>
+                                                <div class="row mb-3">
+                                                    <div class="col-md-6">
+                                                        <small class="text-muted d-block">Check-In</small>
+                                                        <strong>{{ booking.checkin_date.strftime('%d %b %Y') if booking.checkin_date else 'N/A' }}</strong>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <small class="text-muted d-block">Check-Out</small>
+                                                        <strong>{{ booking.checkout_date.strftime('%d %b %Y') if booking.checkout_date else 'N/A' }}</strong>
+                                                    </div>
+                                                </div>
+                                                <div class="d-flex justify-content-between align-content-center">
+                                                    <span class="fw-bold fs-5">₦{{ "{:,.0f}".format(booking.total_amount or 0) }}</span>
+                                                    <a href="{{ url_for('property_details', prop_id=booking.booking_propid) }}" class="btn btn-outline-primary">View Property</a>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="col-md-6">
-                                        <small class="text-muted d-block">
-                                            Check-Out
-                                        </small>
-                                        <strong>
-                                            14 May 2025
-                                        </strong>
+                                    {% endfor %}
+                                    {% if bookings|length == 0 %}
+                                    <div class="col-12">
+                                        <div class="alert alert-info mb-0">No bookings yet.</div>
                                     </div>
-                                </div>
-                                <div class="d-flex justify-content-between align-content-center">
-                                    <span class="fw-bold fs-4">
-                                        ₦135,000
-                                    </span>
-                                    <a href="#" class="btn btn-outline-primary">
-                                        View Details
-                                    </a>
-                                </div>
-                                
-                            </div>
-                        </div>
-                                    </div>
-                                    <div class="col-lg-6">
-                        <div class="booking-card">
-                            <div class="position-relative">
-                                <img src="images/photo-1505693416388-ac5ce068fe85.jpg" alt="" class="img-fluid booking-image w-100">
-                                <span class="badge bg-success status-badge">
-                                    Active
-                                </span>
-                            </div>
-                            <div class="p-4">
-                                <h3 class="fw-bold">
-                                    Luxury Apartment
-                                </h3>
-                                <p class="text-muted">
-                                    Lekki Phase 1,Lagos
-                                </p>
-                                <div class="row mb-4">
-                                    <div class="col-md-6">
-                                        <small class="text-muted d-block">
-                                            Check-In
-                                        </small>
-                                        <strong>
-                                            12 May 2025
-                                        </strong>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <small class="text-muted d-block">
-                                            Check-Out
-                                        </small>
-                                        <strong>
-                                            14 May 2025
-                                        </strong>
-                                    </div>
-                                </div>
-                                <div class="d-flex justify-content-between align-content-center">
-                                    <span class="fw-bold fs-4">
-                                        ₦135,000
-                                    </span>
-                                    <a href="#" class="btn btn-outline-primary">
-                                        View Details
-                                    </a>
-                                </div>
-                                
-                            </div>
-                            </div>
-                                    </div>
+                                    {% endif %}
                                 </div>
                     </div>
                     <div id="saved" class="tab-pane">
                             <h2>Saved Properties</h2>
-                            <p>Saved apartments appear here.</p>
+                            <p class="text-muted">Properties from your booking history.</p>
+                            <div class="row g-4 mt-2">
+                                {% for property in saved_properties %}
+                                <div class="col-lg-6">
+                                    <div class="booking-card">
+                                        <div class="p-4">
+                                            <h5 class="fw-bold mb-1">{{ property.prop_title }}</h5>
+                                            <p class="text-muted mb-3">{{ property.prop_city or 'N/A' }}</p>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="fw-bold">₦{{ "{:,.0f}".format(property.price_per_night or 0) }}/night</span>
+                                                <a href="{{ url_for('property_details', prop_id=property.prop_id) }}" class="btn btn-outline-primary">View Details</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                {% if saved_properties|length == 0 %}
+                                <div class="col-12">
+                                    <div class="alert alert-info mb-0">No saved properties yet.</div>
+                                </div>
+                                {% endif %}
+                            </div>
                     </div>
                     <div id="payments" class="table-card mb-5 tab-pane">
                             <div class="d-flex justify-content-between align-content-center mb-4">

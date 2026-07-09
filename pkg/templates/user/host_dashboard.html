@@ -16,6 +16,25 @@
                       Dashboard
                     </a>
                   </li>
+                  <li>
+                    <a href="#host-profile">
+                      <i class="fa-solid fa-user"></i>
+                      Profile
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#host-edit-profile">
+                      <i class="fa-solid fa-user-pen"></i>
+                      Edit Profile
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#verification-status">
+                      <i class="fa-solid fa-file-shield"></i>
+                      Verification Status
+                    </a>
+                  </li>
+                  {% if host_can_manage_properties %}
               
                   <li>
                     <a href="#myprops">
@@ -44,6 +63,12 @@
                     </a>
                   </li>
                   <li>
+                    <a href="#property-analytics">
+                      <i class="fa-solid fa-chart-column"></i>
+                      Property Analytics
+                    </a>
+                  </li>
+                  <li>
                     <a href="#reservatn">
                       <i class="fa-solid fa-calendar-check"></i>
                       Reservations
@@ -62,8 +87,9 @@
                       Messages
                     </a>
                   </li>
+                  {% endif %}
                   <li>
-                    <a href="#">
+                    <a href="/logout/">
                       <i class="fa-solid fa-right-from-bracket"></i>
                       Logout
                     </a>
@@ -87,6 +113,9 @@
                                 <p class="text-muted">
                                   Manage your shortlet properties
                                 </p>
+                                <span class="badge {{ 'bg-success' if host_verification_status == 'Verified' else 'bg-danger' if host_verification_status == 'Suspended' else 'bg-warning text-dark' }}">
+                                  {{ host_verification_status }}
+                                </span>
                              </div>
                          </div>
                          <div class="col-lg-6">
@@ -108,9 +137,347 @@
                      </div>
                  </div>
                  </div>
+
+                 <div id="verification-status" class="mb-4">
+                  {% if host_verification_status == 'Pending' %}
+                  <div class="alert alert-warning border-0 shadow-sm">
+                    <h5 class="fw-bold mb-2">Verification Pending</h5>
+                    <p class="mb-0">
+                      Your account is currently under review. Your NIN is being verified by the administrator. You cannot publish properties until verification is complete.
+                    </p>
+                  </div>
+                  {% elif host_verification_status == 'Verified' %}
+                  <div class="alert alert-success border-0 shadow-sm">
+                    <h5 class="fw-bold mb-2">Verification Completed</h5>
+                    <p class="mb-0">
+                      Your host account has been verified successfully. All host features are now enabled.
+                    </p>
+                  </div>
+                  {% else %}
+                  <div class="alert alert-danger border-0 shadow-sm">
+                    <h5 class="fw-bold mb-2">Account Suspended</h5>
+                    <p class="mb-0">
+                      Your host account is currently suspended. Property creation and all property-related actions are disabled.
+                    </p>
+                  </div>
+                  {% endif %}
+                 </div>
+
+                 <div id="host-profile" class="dashboard-card mb-4">
+                  <h4 class="fw-bold mb-3">Profile</h4>
+                  <p class="mb-1"><strong>Name:</strong> {{ deets.user_firstname }} {{ deets.user_lastname }}</p>
+                  <p class="mb-1"><strong>Email:</strong> {{ deets.user_email }}</p>
+                  <p class="mb-0"><strong>Phone:</strong> {{ deets.user_phoneno }}</p>
+                  <p class="mb-0 mt-2"><strong>Verification:</strong>
+                    <span class="badge {{ 'bg-success' if host_verification_status == 'Verified' else 'bg-danger' if host_verification_status == 'Suspended' else 'bg-warning text-dark' }}">
+                      {{ host_verification_status }}
+                    </span>
+                  </p>
+                 </div>
+
+                 <div id="host-edit-profile" class="dashboard-card mb-5">
+                  <h4 class="fw-bold mb-3">Edit Profile</h4>
+                  <div id="hostProfileFeedback"></div>
+                  <form id="hostProfileForm" class="row g-3">
+                    <div class="col-md-6">
+                      <label class="form-label">First Name</label>
+                      <input type="text" name="firstname" class="form-control" value="{{ deets.user_firstname }}" required>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label">Last Name</label>
+                      <input type="text" name="lastname" class="form-control" value="{{ deets.user_lastname }}" required>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label">Phone</label>
+                      <input type="text" name="phone" class="form-control" value="{{ deets.user_phoneno }}" required>
+                    </div>
+                    <div class="col-12">
+                      <button type="submit" class="btn btn-outline-primary">Save Profile</button>
+                    </div>
+                  </form>
+                 </div>
+
+                 {% if host_can_manage_properties %}
                  <div class="row g-4 mb-5">
                     <div class="col-md-12">
-                      <div id="addprop" class="dashboard-card mb-5">
+                      <div id="property-analytics" class="dashboard-card mb-5">
+                        <div class="d-flex justify-content-between align-items-center">
+                          <div>
+                            <h3 class="fw-bold">Property Analytics</h3>
+                            <p class="text-muted mb-0">Quick view of your portfolio performance.</p>
+                          </div>
+                        </div>
+                        <div class="row g-3 mt-2">
+                          <div class="col-md-3">
+                            <div class="p-3 bg-light rounded-3">
+                              <small class="text-muted d-block">Total Properties</small>
+                              <strong>{{ stats.total_properties }}</strong>
+                            </div>
+                          </div>
+                          <div class="col-md-3">
+                            <div class="p-3 bg-light rounded-3">
+                              <small class="text-muted d-block">Pending Review</small>
+                              <strong>{{ stats.pending_properties }}</strong>
+                            </div>
+                          </div>
+                          <div class="col-md-3">
+                            <div class="p-3 bg-light rounded-3">
+                              <small class="text-muted d-block">Reservations</small>
+                              <strong>{{ stats.reservations }}</strong>
+                            </div>
+                          </div>
+                          <div class="col-md-3">
+                            <div class="p-3 bg-light rounded-3">
+                              <small class="text-muted d-block">Confirmed Earnings</small>
+                              <strong>₦{{ "{:,.0f}".format(stats.earnings or 0) }}</strong>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                  <div id="myprops" class="dashboard-card mb-5">
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                
+                      <div>
+                
+                        <h3 class="fw-bold">
+                          Property Status
+                        </h3>
+                
+                        <p class="text-muted">
+                          View approval status of all properties
+                        </p>
+                
+                      </div>
+                      <form class="d-flex gap-2" method="get" action="{{ url_for('host_dashboard') }}">
+                        <input type="hidden" name="reservations_page" value="{{ host_reservations_pagination.page }}">
+                        <input type="hidden" name="properties_page" value="1">
+                        <input type="hidden" name="reservation_search" value="{{ filters.reservation_search }}">
+                        <input type="hidden" name="reservation_status" value="{{ filters.reservation_status }}">
+                        <div class="input-group" style="width:250px;">
+                          <span class="input-group-text">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                          </span>
+                          <input
+                            type="text"
+                            class="form-control"
+                            name="property_search"
+                            value="{{ filters.property_search }}"
+                            placeholder="Search property">
+                        </div>
+                        <select class="form-select" name="property_status" style="width:180px;">
+                          <option value="" {% if not filters.property_status %}selected{% endif %}>All Status</option>
+                          <option value="approved" {% if filters.property_status == 'approved' %}selected{% endif %}>Approved</option>
+                          <option value="pending" {% if filters.property_status == 'pending' %}selected{% endif %}>Pending Review</option>
+                          <option value="available" {% if filters.property_status == 'available' %}selected{% endif %}>Available</option>
+                          <option value="booked" {% if filters.property_status == 'booked' %}selected{% endif %}>Booked</option>
+                          <option value="inactive" {% if filters.property_status == 'inactive' %}selected{% endif %}>Inactive</option>
+                        </select>
+                        <button class="btn searchbtn" type="submit">
+                          <i class="fa-solid fa-filter me-2"></i>
+                          Filter
+                        </button>
+                        <a class="btn btn-outline-secondary" href="{{ url_for('host_dashboard') }}#myprops">View All</a>
+                      </form>
+                
+                    </div>
+                
+                    <div class="table-responsive">
+                
+                      <table class="table table-hover align-middle">
+                
+                        <thead class="table-light">
+                
+                          <tr>
+                
+                            <th>Property</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Date Submitted</th>
+                            <th>Actions</th>
+                
+                          </tr>
+                
+                        </thead>
+                
+                        <tbody>
+                          {% for property in host_properties %}
+                          <tr>
+                            <td>{{ property.prop_title }}</td>
+                            <td>{{ property.property_type.prop_typename if property.property_type else 'Property' }}</td>
+                            <td>
+                              <span class="badge {{ 'bg-success' if property.is_verified else 'bg-warning text-dark' }} statuss-badge">
+                                {{ 'Approved' if property.is_verified else 'Pending Review' }}
+                              </span>
+                            </td>
+                            <td>#{{ property.prop_id }}</td>
+                            <td>
+                              <span class="badge {{ 'bg-success' if property.prop_availability_status == 'available' else 'bg-warning text-dark' if property.prop_availability_status == 'booked' else 'bg-danger' }}">
+                                {{ property.prop_availability_status|capitalize }}
+                              </span>
+                            </td>
+                          </tr>
+                          {% endfor %}
+                          {% if host_properties|length == 0 %}
+                          <tr>
+                            <td colspan="5" class="text-center text-muted py-4">No properties submitted yet.</td>
+                          </tr>
+                          {% endif %}
+                        </tbody>
+                
+                      </table>
+                      {% if host_properties_pagination.pages > 1 %}
+                      <nav aria-label="Host properties pagination">
+                        <ul class="pagination d-flex justify-content-center align-items-center">
+                          <li class="page-item {% if not host_properties_pagination.has_prev %}disabled{% endif %}">
+                            <a class="page-link" href="{{ url_for('host_dashboard', properties_page=host_properties_pagination.prev_num, reservations_page=host_reservations_pagination.page, property_search=filters.property_search, property_status=filters.property_status, reservation_search=filters.reservation_search, reservation_status=filters.reservation_status) }}#myprops" aria-label="Previous">
+                              <span aria-hidden="true">&laquo;</span>
+                            </a>
+                          </li>
+                          {% for page_num in host_properties_pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=1) %}
+                            {% if page_num %}
+                              <li class="page-item {% if page_num == host_properties_pagination.page %}active{% endif %}">
+                                <a class="page-link {% if page_num == host_properties_pagination.page %}text-light{% endif %}" href="{{ url_for('host_dashboard', properties_page=page_num, reservations_page=host_reservations_pagination.page, property_search=filters.property_search, property_status=filters.property_status, reservation_search=filters.reservation_search, reservation_status=filters.reservation_status) }}#myprops">{{ page_num }}</a>
+                              </li>
+                            {% else %}
+                              <li class="page-item disabled"><span class="page-link">…</span></li>
+                            {% endif %}
+                          {% endfor %}
+                          <li class="page-item {% if not host_properties_pagination.has_next %}disabled{% endif %}">
+                            <a class="page-link" href="{{ url_for('host_dashboard', properties_page=host_properties_pagination.next_num, reservations_page=host_reservations_pagination.page, property_search=filters.property_search, property_status=filters.property_status, reservation_search=filters.reservation_search, reservation_status=filters.reservation_status) }}#myprops" aria-label="Next">
+                              <span aria-hidden="true">&raquo;</span>
+                            </a>
+                          </li>
+                        </ul>
+                      </nav>
+                      {% endif %}
+                    </div>
+                  </div>
+                    <div id="reservatn" class="table-card mb-5">
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                
+                      <div>
+                
+                        <h3 class="fw-bold">
+                          Recent Reservations
+                        </h3>
+                
+                        <p class="text-muted mb-0">
+                          Latest guest bookings
+                        </p>
+                
+                      </div>
+                      <form class="d-flex gap-2" method="get" action="{{ url_for('host_dashboard') }}">
+                        <input type="hidden" name="properties_page" value="{{ host_properties_pagination.page }}">
+                        <input type="hidden" name="reservations_page" value="1">
+                        <input type="hidden" name="property_search" value="{{ filters.property_search }}">
+                        <input type="hidden" name="property_status" value="{{ filters.property_status }}">
+                        <div class="input-group" style="width:250px;">
+                          <span class="input-group-text">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                          </span>
+                          <input
+                            type="text"
+                            class="form-control"
+                            name="reservation_search"
+                            value="{{ filters.reservation_search }}"
+                            placeholder="Search reservation">
+                        </div>
+                        <select class="form-select" name="reservation_status" style="width:180px;">
+                          <option value="" {% if not filters.reservation_status %}selected{% endif %}>All Status</option>
+                          <option value="confirmed" {% if filters.reservation_status == 'confirmed' %}selected{% endif %}>Confirmed</option>
+                          <option value="pending" {% if filters.reservation_status == 'pending' %}selected{% endif %}>Pending</option>
+                          <option value="cancelled" {% if filters.reservation_status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                          <option value="completed" {% if filters.reservation_status == 'completed' %}selected{% endif %}>Completed</option>
+                        </select>
+                        <button class="searchbtn" type="submit">
+                          <i class="fa-solid fa-filter me-2"></i>
+                          Filter
+                        </button>
+                        <a class="btn btn-outline-secondary" href="{{ url_for('host_dashboard') }}#reservatn">View All</a>
+                      </form>
+                
+                    </div>
+                
+                    <div class="table-responsive">
+                
+                      <table class="table align-middle">
+                
+                        <thead>
+                
+                          <tr>
+                
+                            <th>Booking ID</th>
+                            <th>Guest</th>
+                            <th>Property</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Amount</th>
+                
+                          </tr>
+                
+                        </thead>
+                
+                        <tbody>
+                          {% for booking in recent_reservations %}
+                          <tr>
+                            <td>#BK{{ booking.booking_id }}</td>
+                            <td>
+                              {% if booking.user %}
+                              {{ booking.user.user_firstname }} {{ booking.user.user_lastname }}
+                              {% else %}
+                              Guest
+                              {% endif %}
+                            </td>
+                            <td>{{ booking.property.prop_title if booking.property else 'Property' }}</td>
+                            <td>{{ booking.created_at.strftime('%d %b %Y') if booking.created_at else 'N/A' }}</td>
+                            <td>
+                              <span class="badge {{ 'bg-success' if booking.booking_status == 'confirmed' else 'bg-warning text-dark' if booking.booking_status == 'pending' else 'bg-danger' }}">
+                                {{ booking.booking_status|capitalize }}
+                              </span>
+                            </td>
+                            <td class="fw-bold">₦{{ "{:,.0f}".format(booking.total_amount or 0) }}</td>
+                          </tr>
+                          {% endfor %}
+                          {% if recent_reservations|length == 0 %}
+                          <tr>
+                            <td colspan="6" class="text-center text-muted py-4">No reservations yet.</td>
+                          </tr>
+                          {% endif %}
+                        </tbody>
+                
+                      </table>
+                      {% if host_reservations_pagination.pages > 1 %}
+                      <nav aria-label="Host reservations pagination">
+                        <ul class="pagination d-flex justify-content-center align-items-center">
+                          <li class="page-item {% if not host_reservations_pagination.has_prev %}disabled{% endif %}">
+                            <a class="page-link" href="{{ url_for('host_dashboard', properties_page=host_properties_pagination.page, reservations_page=host_reservations_pagination.prev_num, property_search=filters.property_search, property_status=filters.property_status, reservation_search=filters.reservation_search, reservation_status=filters.reservation_status) }}#reservatn" aria-label="Previous">
+                              <span aria-hidden="true">&laquo;</span>
+                            </a>
+                          </li>
+                          {% for page_num in host_reservations_pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=1) %}
+                            {% if page_num %}
+                              <li class="page-item {% if page_num == host_reservations_pagination.page %}active{% endif %}">
+                                <a class="page-link {% if page_num == host_reservations_pagination.page %}text-light{% endif %}" href="{{ url_for('host_dashboard', properties_page=host_properties_pagination.page, reservations_page=page_num, property_search=filters.property_search, property_status=filters.property_status, reservation_search=filters.reservation_search, reservation_status=filters.reservation_status) }}#reservatn">{{ page_num }}</a>
+                              </li>
+                            {% else %}
+                              <li class="page-item disabled"><span class="page-link">…</span></li>
+                            {% endif %}
+                          {% endfor %}
+                          <li class="page-item {% if not host_reservations_pagination.has_next %}disabled{% endif %}">
+                            <a class="page-link" href="{{ url_for('host_dashboard', properties_page=host_properties_pagination.page, reservations_page=host_reservations_pagination.next_num, property_search=filters.property_search, property_status=filters.property_status, reservation_search=filters.reservation_search, reservation_status=filters.reservation_status) }}#reservatn" aria-label="Next">
+                              <span aria-hidden="true">&raquo;</span>
+                            </a>
+                          </li>
+                        </ul>
+                      </nav>
+                      {% endif %}
+                    </div>
+                
+                    </div>
+                  </div>
+                    <div id="addprop" class="dashboard-card mb-5">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <div>
                           <h3 class="fw-bold">
@@ -253,276 +620,33 @@
                  </div>
                       </div>
                     </div>
-                 <div id="reservatn" class="table-card mb-5">
-
-                    <div class="d-flex justify-content-between align-items-center mb-4">
                 
-                      <div>
-                
-                        <h3 class="fw-bold">
-                          Recent Reservations
-                        </h3>
-                
-                        <p class="text-muted mb-0">
-                          Latest guest bookings
-                        </p>
-                
-                      </div>
-                      <div class="d-flex gap-2">
-            
-                        <div class="input-group" style="width:250px;">
-            
-                            <span class="input-group-text">
-                                <i class="fa-solid fa-magnifying-glass"></i>
-                            </span>
-            
-                            <input
-                                type="text"
-                                class="form-control"
-                                placeholder="Search property">
-            
-                        </div>
-            
-                        <select class="form-select" style="width:180px;">
-            
-                            <option value="">
-                                All Status
-                            </option>
-            
-                            <option value="approved">
-                                Verified
-                            </option>
-            
-                            <option value="pending">
-                                Pending 
-                            </option>
-            
-                            <option value="suspended">
-                                Cancelled
-                            </option>
-            
-                        </select>
-            
-                        <button class="searchbtn">
-            
-                            <i class="fa-solid fa-filter me-2"></i>
-            
-                            Filter
-            
-                        </button>
-            
-                    </div>
-                
-                    </div>
-                
-                    <div class="table-responsive">
-                
-                      <table class="table align-middle">
-                
-                        <thead>
-                
-                          <tr>
-                
-                            <th>Booking ID</th>
-                            <th>Guest</th>
-                            <th>Property</th>
-                            <th>Date</th>
-                            <th>Status</th>
-                            <th>Amount</th>
-                
-                          </tr>
-                
-                        </thead>
-                
-                        <tbody>
-                          {% for booking in recent_reservations %}
-                          <tr>
-                            <td>#BK{{ booking.booking_id }}</td>
-                            <td>
-                              {% if booking.user %}
-                              {{ booking.user.user_firstname }} {{ booking.user.user_lastname }}
-                              {% else %}
-                              Guest
-                              {% endif %}
-                            </td>
-                            <td>{{ booking.property.prop_title if booking.property else 'Property' }}</td>
-                            <td>{{ booking.created_at.strftime('%d %b %Y') if booking.created_at else 'N/A' }}</td>
-                            <td>
-                              <span class="badge {{ 'bg-success' if booking.booking_status == 'confirmed' else 'bg-warning text-dark' if booking.booking_status == 'pending' else 'bg-danger' }}">
-                                {{ booking.booking_status|capitalize }}
-                              </span>
-                            </td>
-                            <td class="fw-bold">₦{{ "{:,.0f}".format(booking.total_amount or 0) }}</td>
-                          </tr>
-                          {% endfor %}
-                          {% if recent_reservations|length == 0 %}
-                          <tr>
-                            <td colspan="6" class="text-center text-muted py-4">No reservations yet.</td>
-                          </tr>
-                          {% endif %}
-                        </tbody>
-                
-                      </table>
-                      <nav aria-label="Page navigation example">
-                        <ul class="pagination d-flex justify-content-center align-items-center">
-                          <li class="page-item">
-                            <a class="page-link" href="#" aria-label="Previous">
-                              <span aria-hidden="true">&laquo;</span>
-                            </a>
-                          </li>
-                          <li class="page-item"><a class="page-link active text-light" href="#">1</a></li>
-                          <li class="page-item"><a class="page-link" href="#">2</a></li>
-                          <li class="page-item"><a class="page-link" href="#">3</a></li>
-                          <li class="page-item">
-                            <a class="page-link" href="#" aria-label="Next">
-                              <span aria-hidden="true">&raquo;</span>
-                            </a>
-                          </li>
-                        </ul>
-                      </nav>
-                    </div>
-                
-                  </div>
-                  <div id="myprops" class="dashboard-card">
-
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                
-                      <div>
-                
-                        <h3 class="fw-bold">
-                          Property Status
-                        </h3>
-                
-                        <p class="text-muted">
-                          View approval status of all properties
-                        </p>
-                
-                      </div>
-                      <div class="d-flex gap-2">
-            
-                        <div class="input-group" style="width:250px;">
-            
-                            <span class="input-group-text">
-                                <i class="fa-solid fa-magnifying-glass"></i>
-                            </span>
-            
-                            <input
-                                type="text"
-                                class="form-control"
-                                placeholder="Search property">
-            
-                        </div>
-                        <select class="form-select" style="width:180px;">
-            
-                            <option value="">
-                                All Status
-                            </option>
-            
-                            <option value="approved">
-                                Approved
-                            </option>
-            
-                            <option value="pending">
-                                Pending Review
-                            </option>
-            
-                            <option value="suspended">
-                                Suspended
-                            </option>
-            
-                            <option value="rejected">
-                                Rejected
-                            </option>
-            
-                            <option value="deleted">
-                                Deleted
-                            </option>
-            
-                        </select>
-            
-                        <button class="btn searchbtn">
-            
-                            <i class="fa-solid fa-filter me-2"></i>
-            
-                            Filter
-            
-                        </button>
-            
-                    </div>
-                
-                    </div>
-                
-                    <div class="table-responsive">
-                
-                      <table class="table table-hover align-middle">
-                
-                        <thead class="table-light">
-                
-                          <tr>
-                
-                            <th>Property</th>
-                            <th>Type</th>
-                            <th>Status</th>
-                            <th>Date Submitted</th>
-                            <th>Actions</th>
-                
-                          </tr>
-                
-                        </thead>
-                
-                        <tbody>
-                          {% for property in host_properties %}
-                          <tr>
-                            <td>{{ property.prop_title }}</td>
-                            <td>{{ property.property_type.prop_typename if property.property_type else 'Property' }}</td>
-                            <td>
-                              <span class="badge {{ 'bg-success' if property.is_verified else 'bg-warning text-dark' }} statuss-badge">
-                                {{ 'Approved' if property.is_verified else 'Pending Review' }}
-                              </span>
-                            </td>
-                            <td>#{{ property.prop_id }}</td>
-                            <td>
-                              <span class="badge {{ 'bg-success' if property.prop_availability_status == 'available' else 'bg-warning text-dark' if property.prop_availability_status == 'booked' else 'bg-danger' }}">
-                                {{ property.prop_availability_status|capitalize }}
-                              </span>
-                            </td>
-                          </tr>
-                          {% endfor %}
-                          {% if host_properties|length == 0 %}
-                          <tr>
-                            <td colspan="5" class="text-center text-muted py-4">No properties submitted yet.</td>
-                          </tr>
-                          {% endif %}
-                        </tbody>
-                
-                      </table>
-                      <nav aria-label="Page navigation example">
-                        <ul class="pagination d-flex justify-content-center align-items-center">
-                          <li class="page-item">
-                            <a class="page-link" href="#" aria-label="Previous">
-                              <span aria-hidden="true">&laquo;</span>
-                            </a>
-                          </li>
-                          <li class="page-item"><a class="page-link" href="#">1</a></li>
-                          <li class="page-item"><a class="page-link active text-light" href="#">2</a></li>
-                          <li class="page-item"><a class="page-link" href="#">3</a></li>
-                          <li class="page-item">
-                            <a class="page-link" href="#" aria-label="Next">
-                              <span aria-hidden="true">&raquo;</span>
-                            </a>
-                          </li>
-                        </ul>
-                      </nav>
-                    </div>
-                
-                  </div>
+                 
             </div>
          </div>
     </div>
+    {% else %}
+    <div class="dashboard-card mb-5">
+      <h5 class="fw-bold mb-2">Host Features Restricted</h5>
+      <p class="text-muted mb-0">Property creation, publication, editing, and analytics are available only after account verification.</p>
+    </div>
+    {% endif %}
 {% block customjs %}
 <script>
     $(document).ready(function(){
     const csrfToken = $('input[name="csrf_token"]').first().val() || "";
+
+    $('#hostProfileForm').submit(function(e){
+      e.preventDefault();
+      const formData = $(this).serialize();
+      $.post('/dashboard/save/', formData)
+        .done(function(response){
+          $('#hostProfileFeedback').html('<div class="alert alert-success">Profile updated successfully.</div>');
+        })
+        .fail(function(){
+          $('#hostProfileFeedback').html('<div class="alert alert-danger">Unable to update profile right now.</div>');
+        });
+    });
 
     function appendHostAmenity(amenity){
       if (!amenity || !amenity.amenity_id){

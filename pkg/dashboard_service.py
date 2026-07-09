@@ -2,7 +2,7 @@ import os
 import uuid
 from decimal import Decimal
 from datetime import datetime, date
-from sqlalchemy import or_, and_
+from sqlalchemy import or_, and_, func
 from sqlalchemy.orm import joinedload
 from flask import current_app
 from pkg.models import (
@@ -14,6 +14,7 @@ from pkg.models import (
     Amenity,
     PropertyAmenity,
     Booking,
+    BookingDetail,
     PropertyImage,
     db,
 )
@@ -29,8 +30,9 @@ class DashboardService:
             return None
 
         bookings_query = (
-            Booking.query.filter_by(booking_userid=user_id)
-            .order_by(Booking.created_at.desc())
+            BookingDetail.query.options(joinedload(BookingDetail.property))
+            .filter_by(booking_userid=user_id)
+            .order_by(BookingDetail.created_at.desc())
         )
 
         bookings_pagination = bookings_query.paginate(
@@ -42,27 +44,53 @@ class DashboardService:
         bookings = bookings_pagination.items
 
         total_bookings = bookings_query.count()
-        completed_bookings = bookings_query.filter(
-            Booking.booking_status.in_(("confirmed", "completed"))
-        ).all()
+        paid_bookings = bookings_query.filter(BookingDetail.booking_status == "paid").all()
+
+        saved_properties_count = (
+            db.session.query(func.count(func.distinct(BookingDetail.booking_propid)))
+            .filter(BookingDetail.booking_userid == user_id)
+            .scalar()
+            or 0
+        )
+
+        saved_property_ids = [
+            prop_id
+            for (prop_id,) in (
+                db.session.query(BookingDetail.booking_propid)
+                .filter(BookingDetail.booking_userid == user_id)
+                .distinct()
+                .all()
+            )
+            if prop_id
+        ]
+
+        saved_properties = []
+        if saved_property_ids:
+            saved_properties = (
+                Property.query.filter(Property.prop_id.in_(saved_property_ids))
+                .order_by(Property.prop_id.desc())
+                .all()
+            )
 
         total_spent = sum(
             (booking.total_amount or Decimal("0"))
-            for booking in completed_bookings
+            for booking in paid_bookings
         )
-        active_reservations = Booking.query.filter_by(
+        active_reservations = BookingDetail.query.filter_by(
             booking_userid=user_id,
-            booking_status="confirmed",
+            booking_status="paid",
         ).count()
 
         return {
             "deets": user,
             "bookings": bookings,
             "bookings_pagination": bookings_pagination,
+            "saved_properties": saved_properties,
             "stats": {
                 "total_bookings": total_bookings,
                 "active_reservations": active_reservations,
                 "total_spent": total_spent,
+                "saved_properties": saved_properties_count,
                 "membership": "Host" if user.user_role == "host" else "Customer",
             },
         }
@@ -74,15 +102,46 @@ class DashboardService:
         reservations_per_page=5,
         properties_page=1,
         properties_per_page=5,
+        reservation_search=None,
+        reservation_status=None,
+        property_search=None,
+        property_status=None,
     ):
         user = User.query.get(user_id)
         if not user:
             return None
 
+        verification_status = user.verification_status
+        if verification_status not in ("Pending", "Verified", "Suspended"):
+            verification_status = "Verified" if user.is_verified else "Pending"
+
+        host_can_manage_properties = verification_status == "Verified"
+
         host_properties_query = (
             Property.query.filter_by(prop_userid=user_id)
             .order_by(Property.prop_id.desc())
         )
+
+        if property_search:
+            property_search_like = f"%{property_search.strip()}%"
+            host_properties_query = host_properties_query.filter(
+                or_(
+                    Property.prop_title.ilike(property_search_like),
+                    Property.prop_address.ilike(property_search_like),
+                    Property.prop_city.ilike(property_search_like),
+                )
+            )
+
+        if property_status:
+            normalized_property_status = property_status.strip().lower()
+            if normalized_property_status == "approved":
+                host_properties_query = host_properties_query.filter(Property.is_verified.is_(True))
+            elif normalized_property_status == "pending":
+                host_properties_query = host_properties_query.filter(Property.is_verified.is_(False))
+            elif normalized_property_status in ("available", "booked", "inactive"):
+                host_properties_query = host_properties_query.filter(
+                    Property.prop_availability_status == normalized_property_status
+                )
 
         host_properties_pagination = host_properties_query.paginate(
             page=properties_page,
@@ -101,6 +160,22 @@ class DashboardService:
             .filter(Property.prop_userid == user_id)
             .order_by(Booking.created_at.desc())
         )
+
+        if reservation_search:
+            reservation_search_like = f"%{reservation_search.strip()}%"
+            host_bookings_query = host_bookings_query.filter(
+                or_(
+                    Property.prop_title.ilike(reservation_search_like),
+                    Booking.booking_status.ilike(reservation_search_like),
+                )
+            )
+
+        if reservation_status:
+            normalized_reservation_status = reservation_status.strip().lower()
+            if normalized_reservation_status in ("pending", "confirmed", "cancelled", "completed"):
+                host_bookings_query = host_bookings_query.filter(
+                    Booking.booking_status == normalized_reservation_status
+                )
 
         host_bookings_pagination = host_bookings_query.paginate(
             page=reservations_page,
@@ -124,6 +199,8 @@ class DashboardService:
 
         return {
             "deets": user,
+            "host_verification_status": verification_status,
+            "host_can_manage_properties": host_can_manage_properties,
             "host_properties": host_properties,
             "recent_reservations": host_bookings,
             "host_properties_pagination": host_properties_pagination,
@@ -137,6 +214,12 @@ class DashboardService:
             "property_types": property_types,
             "property_states": property_states,
             "amenities": amenities,
+            "filters": {
+                "reservation_search": reservation_search or "",
+                "reservation_status": reservation_status or "",
+                "property_search": property_search or "",
+                "property_status": property_status or "",
+            },
         }
 
     def get_search_metadata(self):
@@ -271,6 +354,19 @@ class DashboardService:
         gallery_images=None,
         selected_amenities=None,
     ):
+        host = User.query.get(host_id)
+        if not host or host.user_role != "host":
+            raise ValueError("Unauthorized host account.")
+
+        verification_status = host.verification_status
+        if verification_status not in ("Pending", "Verified", "Suspended"):
+            verification_status = "Verified" if host.is_verified else "Pending"
+
+        if verification_status != "Verified":
+            if verification_status == "Suspended":
+                raise ValueError("Your host account is suspended. Property actions are disabled.")
+            raise ValueError("Your host account is not verified yet. Property actions are disabled.")
+
         if not prop_title:
             raise ValueError("Property title is required.")
         if not prop_typeid:

@@ -1,0 +1,65 @@
+{% extends "user/layout.html" %}
+{% block main_content %}
+<div class="container py-5 mt-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      {% include 'user/alert.html' %}
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+          <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+            <h3 class="fw-bold mb-0">My Profile</h3>
+            {% if host_verification_badge %}
+            <span class="badge {{ host_verification_badge.class }}">{{ host_verification_badge.text }}</span>
+            {% endif %}
+          </div>
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label text-muted">First Name</label>
+              <div class="fw-semibold">{{ deets.user_firstname }}</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label text-muted">Last Name</label>
+              <div class="fw-semibold">{{ deets.user_lastname }}</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label text-muted">Email</label>
+              <div class="fw-semibold">{{ deets.user_email }}</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label text-muted">Phone</label>
+              <div class="fw-semibold">{{ deets.user_phoneno }}</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label text-muted">Role</label>
+              <div class="fw-semibold text-capitalize">{{ deets.user_role }}</div>
+            </div>
+            {% if host_verification_badge %}
+            <div class="col-md-6">
+              <label class="form-label text-muted">Verification Status</label>
+              <div>
+                <span class="badge {{ host_verification_badge.class }}">{{ host_verification_badge.text }}</span>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+
+          {% if host_verification_status == 'Verified' %}
+          <div class="alert alert-success mt-4 mb-0">
+            Congratulations! Your identity has been verified. You can now publish your properties.
+          </div>
+          {% elif host_verification_status == 'Suspended' %}
+          <div class="alert alert-danger mt-4 mb-0">
+            Your verification could not be completed. Please contact support or submit valid NIN documentation.
+          </div>
+          {% elif host_verification_status == 'Pending' %}
+          <div class="alert alert-warning mt-4 mb-0">
+            Your account is currently under review. Your NIN is being verified by the administrator.
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

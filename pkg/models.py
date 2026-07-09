@@ -86,6 +86,52 @@ class User(db.Model):
         lazy=True,
         cascade="all, delete-orphan"
     )
+    nin_number = db.Column(
+        db.String(20),
+        nullable=True,
+        index=True,
+    )
+
+    nin_document = db.Column(
+        db.String(255),
+        nullable=True,
+    )
+
+    verification_status = db.Column(
+        Enum(
+            "Pending",
+            "Verified",
+            "Suspended",
+            name="host_verification_status",
+        ),
+        nullable=True,
+        default="Pending",
+        index=True,
+    )
+
+    verified_at = db.Column(
+        db.DateTime,
+        nullable=True,
+    )
+
+    verified_by = db.Column(
+        db.Integer,
+        db.ForeignKey("admins.admin_id"),
+        nullable=True,
+    )
+
+    verification_reason = db.Column(
+        db.Text,
+        nullable=True,
+    )
+
+    verifier = db.relationship(
+        "Admin",
+        foreign_keys=[verified_by],
+        lazy="joined",
+    )
+
+
 class Admin(db.Model):
     __tablename__ = "admins"
 

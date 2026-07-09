@@ -18,8 +18,10 @@ class ProConfig(GeneralConfig):
     JWT_ISSUER = os.getenv('JWT_ISSUER', 'verified-shortlet-api').strip()
     JWT_AUDIENCE = os.getenv('JWT_AUDIENCE', 'verified-shortlet-client').strip()
     JWT_CLOCK_SKEW_SECONDS = int(os.getenv('JWT_CLOCK_SKEW_SECONDS', '30'))
-    MAX_CONTENT_LENGTH = int(os.getenv('MAX_CONTENT_LENGTH', str(6 * 1024 * 1024)))
-    MAX_UPLOAD_FILE_BYTES = int(os.getenv('MAX_UPLOAD_FILE_BYTES', str(5 * 1024 * 1024)))
+    # Request-wide payload cap (all files + form fields). Increased for multi-image property uploads.
+    MAX_CONTENT_LENGTH = int(os.getenv('MAX_CONTENT_LENGTH', str(30 * 1024 * 1024)))
+    # Per-file cap used by strict upload validators (e.g. NIN docs).
+    MAX_UPLOAD_FILE_BYTES = int(os.getenv('MAX_UPLOAD_FILE_BYTES', str(10 * 1024 * 1024)))
     ALLOWED_UPLOAD_EXTENSIONS = tuple(
         item.strip().lower() for item in os.getenv('ALLOWED_UPLOAD_EXTENSIONS', 'jpg,jpeg,png,webp').split(',') if item.strip()
     )
@@ -30,7 +32,7 @@ class ProConfig(GeneralConfig):
     PAYSTACK_PUBLIC_KEY = os.getenv('PAYSTACK_PUBLIC_KEY', '').strip()
     PAYSTACK_CALLBACK_URL = os.getenv('PAYSTACK_CALLBACK_URL', '').strip()
     PAYSTACK_WEBHOOK_URL = os.getenv('PAYSTACK_WEBHOOK_URL', '').strip()
-
+    UPLOAD_FOLDER = os.getenv('UPLOAD_FOLDER', 'private_uploads').strip()
 
 class TestConfig(GeneralConfig):
      ADMIN_EMAIL="test@admin.com"

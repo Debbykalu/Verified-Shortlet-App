@@ -1,4 +1,5 @@
 import json,secrets, datetime, requests
+import re
 
 from datetime import date
 from decimal import Decimal
@@ -13,8 +14,54 @@ from pkg import app
 from pkg.dashboard_service import DashboardService
 from pkg.forms import RegisterForm, LoginForm, BookingDetailsForm
 from pkg.models import User, Property, Amenity, BookingDetail, BookingPayment, db
+from pkg.utils.upload import save_nin_document
 
 dashboard_service = DashboardService()
+
+
+def _resolve_host_verification_status(user):
+    if not user or user.user_role != 'host':
+        return None
+
+    if user.verification_status in ('Pending', 'Verified', 'Suspended'):
+        return user.verification_status
+
+    return 'Verified' if user.is_verified else 'Pending'
+
+
+def _verification_badge_meta(status):
+    if status == 'Verified':
+        return {
+            'text': 'Verified',
+            'class': 'bg-success',
+        }
+    if status == 'Suspended':
+        return {
+            'text': 'Suspended',
+            'class': 'bg-danger',
+        }
+    return {
+        'text': 'Pending',
+        'class': 'bg-warning text-dark',
+    }
+
+
+def _queue_host_status_notification(user):
+    status = _resolve_host_verification_status(user)
+    if status not in ('Verified', 'Suspended'):
+        session['host_verification_status_seen'] = status
+        return
+
+    last_seen = session.get('host_verification_status_seen')
+    if last_seen == status:
+        return
+
+    if status == 'Verified':
+        flash("Congratulations! Your identity has been verified. You can now publish your properties.", 'successmsg')
+    elif status == 'Suspended':
+        flash("Your verification could not be completed. Please contact support or submit valid NIN documentation.", 'errormsg')
+
+    session['host_verification_status_seen'] = status
 
 
 def _booking_id_from_reference(ref):
@@ -33,6 +80,34 @@ def home():
         id = session.get('useronline')
         deets = User.query.get(id)
     return render_template('user/index.html',deets=deets)
+
+
+@app.route('/profile/')
+def profile():
+    if not session.get('useronline'):
+        flash('Please login to access your profile.', category='errormsg')
+        return redirect(url_for('login'))
+
+    deets = User.query.get(session.get('useronline'))
+    if not deets:
+        session.clear()
+        flash('Session expired, please login again.', category='errormsg')
+        return redirect(url_for('login'))
+
+    host_verification_status = _resolve_host_verification_status(deets) if deets.user_role == 'host' else None
+    host_badge = _verification_badge_meta(host_verification_status) if host_verification_status else None
+
+    return render_template(
+        'user/profile.html',
+        deets=deets,
+        host_verification_status=host_verification_status,
+        host_verification_badge=host_badge,
+    )
+
+
+@app.route('/profile/settings/')
+def profile_settings():
+    return redirect(url_for('profile'))
 
 @app.route('/payment')
 def payment():
@@ -650,10 +725,28 @@ def host_dashboard():
             return redirect(url_for('admin_login'))
         if deets.user_role != 'host':
             return redirect(url_for('dashboard'))
-        context = dashboard_service.get_host_context(id)
+
+        reservations_page = request.args.get('reservations_page', 1, type=int)
+        properties_page = request.args.get('properties_page', 1, type=int)
+        reservation_search = request.args.get('reservation_search', '').strip()
+        reservation_status = request.args.get('reservation_status', '').strip()
+        property_search = request.args.get('property_search', '').strip()
+        property_status = request.args.get('property_status', '').strip()
+
+        _queue_host_status_notification(deets)
+        context = dashboard_service.get_host_context(
+            id,
+            reservations_page=reservations_page,
+            properties_page=properties_page,
+            reservation_search=reservation_search,
+            reservation_status=reservation_status,
+            property_search=property_search,
+            property_status=property_status,
+        )
         return render_template('user/host_dashboard.html', **context)
     flash('You must be logged in to view this page', category='errormsg')
     return redirect(url_for('login'))
+
 
 @app.route('/dashboard/')
 def dashboard():
@@ -705,6 +798,7 @@ def apply_host():
             return jsonify({"status": "error", "message": "You are already a host."}), 400
         user.user_role = 'host'
         user.is_verified = False
+        user.verification_status = 'Pending'
         db.session.commit()
         session['userrole'] = 'host'
         return jsonify({"status": "success", "message": "Host application submitted. Please wait for admin verification."})
@@ -717,6 +811,12 @@ def host_add_property():
         user = User.query.get(user_id)
         if not user or user.user_role != 'host':
             return jsonify({"status": "error", "message": "Unauthorized"}), 401
+        verification_status = _resolve_host_verification_status(user)
+        if verification_status != 'Verified':
+            message = "Your host account is not verified yet. Property actions are disabled."
+            if verification_status == 'Suspended':
+                message = "Your host account is suspended. Property actions are disabled."
+            return jsonify({"status": "error", "message": message}), 403
         try:
             prop_title = request.form.get('prop_title', '').strip()
             prop_description = request.form.get('prop_description', '').strip()
@@ -771,6 +871,13 @@ def host_amenities():
     if not user or user.user_role != 'host':
         return jsonify({"status": "error", "message": "Unauthorized"}), 401
 
+    verification_status = _resolve_host_verification_status(user)
+    if verification_status != 'Verified':
+        message = "Your host account is not verified yet. Amenities management is disabled."
+        if verification_status == 'Suspended':
+            message = "Your host account is suspended. Amenities management is disabled."
+        return jsonify({"status": "error", "message": message}), 403
+
     if request.method == 'GET':
         amenities = Amenity.query.order_by(Amenity.amenity_name.asc()).all()
         return jsonify(
@@ -821,9 +928,37 @@ def host_amenities():
 def register():
     register_form = RegisterForm()
     if register_form.validate_on_submit():
-        if register_form.role.data not in ("customer", "host"):
+        role = (register_form.role.data or "").lower()
+        if role not in ("customer", "host"):
             flash('Only customer and host accounts can register here.', category='errormsg')
             return redirect(url_for('register'))
+
+        nin_number = None
+        document_path = None
+        verification_status = None
+
+        if role == "host":
+            nin_number = (register_form.nin_number.data or "").strip()
+            if not nin_number:
+                register_form.nin_number.errors.append("NIN Number is required for Hosts.")
+                return render_template('user/registration.html', register=register_form)
+
+            if not re.fullmatch(r"\d{11}", nin_number):
+                register_form.nin_number.errors.append("NIN must be exactly 11 digits.")
+                return render_template('user/registration.html', register=register_form)
+
+            if not register_form.nin_document.data:
+                register_form.nin_document.errors.append("Please upload your NIN document.")
+                return render_template('user/registration.html', register=register_form)
+
+            try:
+                document_path = save_nin_document(register_form.nin_document.data)
+            except ValueError as exc:
+                register_form.nin_document.errors.append(str(exc))
+                return render_template('user/registration.html', register=register_form)
+
+            verification_status = "Pending"
+
         hashed = generate_password_hash(register_form.password.data)
         user = User(
             user_firstname=register_form.firstname.data,
@@ -831,12 +966,22 @@ def register():
             user_email=register_form.email.data,
             user_phoneno=register_form.phone.data,
             user_password=hashed,
-            user_role=register_form.role.data,
+            user_role=role,
+            nin_number=nin_number,
+            nin_document=document_path,
+            verification_status=verification_status,
         )
         db.session.add(user)
         db.session.commit()
+
+        session['useronline'] = user.user_id
+        session['userrole'] = user.user_role
+
         flash('Account created successfully!', category='success')
-        return redirect(url_for('login'))
+        if user.user_role == 'host':
+            return redirect(url_for('host_dashboard'))
+        return redirect(url_for('dashboard'))
+
     return render_template('user/registration.html', register=register_form)
 
 
@@ -861,6 +1006,7 @@ def login():
                 session['useronline'] = deets.user_id
                 session['userrole'] = deets.user_role
                 if deets.user_role == 'host':
+                    _queue_host_status_notification(deets)
                     return redirect(url_for('host_dashboard'))
                 return redirect(url_for('dashboard'))
             flash('Invalid password', category='errormsg')

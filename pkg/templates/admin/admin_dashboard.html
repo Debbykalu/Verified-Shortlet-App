@@ -640,7 +640,7 @@
                 
 <!-- Pending Host Verifications -->
 
-<div id="pending-host-verifications" class="card border-0 shadow-sm rounded-4 mb-5">
+<div id="pending-host-verifications" class="card shadow-sm border-0 rounded-4 mb-5">
 
     <!-- Card Header -->
 
@@ -652,25 +652,41 @@
 
                 <h4 class="fw-bold mb-1">
 
-                    Pending Host Verifications
+                    Host Verification
 
                 </h4>
 
                 <small class="text-muted">
 
-                    Review newly registered hosts before approval.
+                    Review host identity details and manage verification status.
 
                 </small>
 
             </div>
 
-            <button class="btn btn-primary rounded-pill">
-
-                <i class="fa-solid fa-user-check me-2"></i>
-
-                View All
-
-            </button>
+            <form class="d-flex gap-2" method="get" action="{{ url_for('admin_dashboard') }}">
+                <input type="hidden" name="property_page" value="{{ pending_properties_pagination.page }}">
+                <input type="hidden" name="booking_page" value="{{ recent_bookings_pagination.page }}">
+                <input type="hidden" name="payment_page" value="{{ recent_payments_pagination.page }}">
+                <input type="hidden" name="property_search" value="{{ filters.property_search }}">
+                <input type="hidden" name="property_status" value="{{ filters.property_status }}">
+                <input type="hidden" name="booking_search" value="{{ filters.booking_search }}">
+                <input type="hidden" name="booking_status" value="{{ filters.booking_status }}">
+                <input type="hidden" name="payment_search" value="{{ filters.payment_search }}">
+                <input type="hidden" name="payment_status" value="{{ filters.payment_status }}">
+                <input type="text" class="form-control" style="width:220px;" name="host_search" placeholder="Search host" value="{{ filters.host_search }}">
+                <select class="form-select" style="width:170px;" name="host_status">
+                    <option value="" {% if not filters.host_status %}selected{% endif %}>All Status</option>
+                    <option value="Pending" {% if filters.host_status == 'Pending' %}selected{% endif %}>Pending</option>
+                    <option value="Verified" {% if filters.host_status == 'Verified' %}selected{% endif %}>Verified</option>
+                    <option value="Suspended" {% if filters.host_status == 'Suspended' %}selected{% endif %}>Suspended</option>
+                </select>
+                <button class="btn btn-primary rounded-pill" type="submit">
+                    <i class="fa-solid fa-filter me-2"></i>
+                    Filter
+                </button>
+                <a class="btn btn-outline-secondary rounded-pill" href="{{ url_for('admin_dashboard') }}#pending-host-verifications">View All</a>
+            </form>
 
         </div>
 
@@ -680,19 +696,25 @@
 
     <div class="table-responsive">
 
-        <table class="table table-hover align-middle mb-0">
+        <table class="table align-middle">
 
-            <thead class="table-light">
+            <thead>
 
                 <tr>
 
                     <th>Name</th>
 
-                    <th>Email Address</th>
+                    <!-- <th>Email Address</th> -->
 
-                    <th>Date Submitted</th>
+                    <!-- <th>Phone</th> -->
 
-                    <th>Status</th>
+                    <th>Registration Date</th>
+
+                    <th>NIN Number</th>
+
+                    <th>NIN Document</th>
+
+                    <th>Verification Status</th>
 
                     <th class="text-center">
 
@@ -743,11 +765,15 @@
 
                     </td>
 
-                    <td>
+                    <!-- <td>
 
                         {{ host.user_email }}
 
-                    </td>
+                    </td> -->
+
+                    <!-- <td>
+                        {{ host.user_phoneno or '—' }}
+                    </td> -->
 
                     <td>
 
@@ -756,12 +782,33 @@
                     </td>
 
                     <td>
+                        {{ host.nin_number or '—' }}
+                    </td>
 
-                        <span class="badge rounded-pill bg-warning text-dark">
+                    <td>
+                        {% if host.nin_document %}
+                        <a class="btn btn-outline-primary btn-sm" target="_blank" href="{{ url_for('view_host_nin_document', user_id=host.user_id) }}">
+                            <i class="fa-solid fa-file-lines me-1"></i>
+                            View NIN Document
+                        </a>
+                        {% else %}
+                        <span class="text-muted">Not uploaded</span>
+                        {% endif %}
+                    </td>
 
-                            Pending Review
+                    <td>
+
+                        {% set host_status = host.verification_status if host.verification_status in ['Pending', 'Verified', 'Suspended'] else ('Verified' if host.is_verified else 'Pending') %}
+
+                        <span class="badge rounded-pill {{ 'bg-success' if host_status == 'Verified' else 'bg-danger' if host_status == 'Suspended' else 'bg-warning text-dark' }}">
+
+                            {{ host_status }}
 
                         </span>
+
+                        {% if host.verification_reason %}
+                        <div class="small text-muted mt-1">Reason: {{ host.verification_reason }}</div>
+                        {% endif %}
 
                     </td>
 
@@ -769,25 +816,19 @@
 
                         <div class="d-flex justify-content-center gap-2">
 
-                            <button
-                                class="btn btn-success btn-sm rounded-pill px-3 verify-host-btn"
-                                data-id="{{ host.user_id }}"
-                                data-verified="true">
+                            <button class="btn btn-success btn-sm rounded-pill px-3 verify-host-btn" data-id="{{ host.user_id }}">
 
                                 <i class="fa-solid fa-check me-1"></i>
 
-                                Approve
+                                Verify
 
                             </button>
 
-                            <button
-                                class="btn btn-outline-danger btn-sm rounded-pill px-3 verify-host-btn"
-                                data-id="{{ host.user_id }}"
-                                data-verified="false">
+                            <button class="btn btn-outline-danger btn-sm rounded-pill px-3 suspend-host-btn" data-id="{{ host.user_id }}">
 
-                                <i class="fa-solid fa-xmark me-1"></i>
+                                <i class="fa-solid fa-ban me-1"></i>
 
-                                Reject
+                                Suspend
 
                             </button>
 
@@ -801,7 +842,7 @@
 
                 {% if pending_hosts|length == 0 %}
                 <tr>
-                    <td colspan="5" class="text-center text-muted py-4">No pending host verifications.</td>
+                    <td colspan="8" class="text-center text-muted py-4">No hosts available for verification.</td>
                 </tr>
                 {% endif %}
 
@@ -819,15 +860,31 @@
 
             <small class="text-muted">
 
-                Showing {{ pending_hosts|length }} pending host application{% if pending_hosts|length != 1 %}s{% endif %}
+                Showing {{ pending_hosts|length }} of {{ pending_hosts_pagination.total }} host record{% if pending_hosts_pagination.total != 1 %}s{% endif %}
 
             </small>
 
-            <button class="btn btn-link text-decoration-none">
-
-                View Complete List →
-
-            </button>
+            {% if pending_hosts_pagination.pages > 1 %}
+            <nav aria-label="Host verification pagination">
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item {% if not pending_hosts_pagination.has_prev %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('admin_dashboard', host_page=pending_hosts_pagination.prev_num, property_page=pending_properties_pagination.page, booking_page=recent_bookings_pagination.page, payment_page=recent_payments_pagination.page, host_search=filters.host_search, host_status=filters.host_status, property_search=filters.property_search, property_status=filters.property_status, booking_search=filters.booking_search, booking_status=filters.booking_status, payment_search=filters.payment_search, payment_status=filters.payment_status) }}#pending-host-verifications">&laquo;</a>
+                    </li>
+                    {% for page_num in pending_hosts_pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=1) %}
+                        {% if page_num %}
+                        <li class="page-item {% if page_num == pending_hosts_pagination.page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('admin_dashboard', host_page=page_num, property_page=pending_properties_pagination.page, booking_page=recent_bookings_pagination.page, payment_page=recent_payments_pagination.page, host_search=filters.host_search, host_status=filters.host_status, property_search=filters.property_search, property_status=filters.property_status, booking_search=filters.booking_search, booking_status=filters.booking_status, payment_search=filters.payment_search, payment_status=filters.payment_status) }}#pending-host-verifications">{{ page_num }}</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled"><span class="page-link">…</span></li>
+                        {% endif %}
+                    {% endfor %}
+                    <li class="page-item {% if not pending_hosts_pagination.has_next %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('admin_dashboard', host_page=pending_hosts_pagination.next_num, property_page=pending_properties_pagination.page, booking_page=recent_bookings_pagination.page, payment_page=recent_payments_pagination.page, host_search=filters.host_search, host_status=filters.host_status, property_search=filters.property_search, property_status=filters.property_status, booking_search=filters.booking_search, booking_status=filters.booking_status, payment_search=filters.payment_search, payment_status=filters.payment_status) }}#pending-host-verifications">&raquo;</a>
+                    </li>
+                </ul>
+            </nav>
+            {% endif %}
 
         </div>
 
@@ -862,13 +919,31 @@
 
             </div>
 
-            <button class="btn btn-primary rounded-pill">
-
-                <i class="fa-solid fa-building-circle-check me-2"></i>
-
-                View All
-
-            </button>
+            <form class="d-flex gap-2" method="get" action="{{ url_for('admin_dashboard') }}">
+                <input type="hidden" name="host_page" value="{{ pending_hosts_pagination.page }}">
+                <input type="hidden" name="booking_page" value="{{ recent_bookings_pagination.page }}">
+                <input type="hidden" name="payment_page" value="{{ recent_payments_pagination.page }}">
+                <input type="hidden" name="host_search" value="{{ filters.host_search }}">
+                <input type="hidden" name="host_status" value="{{ filters.host_status }}">
+                <input type="hidden" name="booking_search" value="{{ filters.booking_search }}">
+                <input type="hidden" name="booking_status" value="{{ filters.booking_status }}">
+                <input type="hidden" name="payment_search" value="{{ filters.payment_search }}">
+                <input type="hidden" name="payment_status" value="{{ filters.payment_status }}">
+                <input type="text" class="form-control" style="width:220px;" name="property_search" placeholder="Search property" value="{{ filters.property_search }}">
+                <select class="form-select" style="width:170px;" name="property_status">
+                    <option value="pending" {% if filters.property_status == 'pending' %}selected{% endif %}>Pending</option>
+                    <option value="approved" {% if filters.property_status == 'approved' %}selected{% endif %}>Approved</option>
+                    <option value="available" {% if filters.property_status == 'available' %}selected{% endif %}>Available</option>
+                    <option value="booked" {% if filters.property_status == 'booked' %}selected{% endif %}>Booked</option>
+                    <option value="inactive" {% if filters.property_status == 'inactive' %}selected{% endif %}>Inactive</option>
+                    <option value="all" {% if filters.property_status == 'all' %}selected{% endif %}>All</option>
+                </select>
+                <button class="btn btn-primary rounded-pill" type="submit">
+                    <i class="fa-solid fa-filter me-2"></i>
+                    Filter
+                </button>
+                <a class="btn btn-outline-secondary rounded-pill" href="{{ url_for('admin_dashboard', property_status='all') }}#pending-property-verification">View All</a>
+            </form>
 
         </div>
 
@@ -1004,15 +1079,31 @@
 
             <small class="text-muted">
 
-                {{ pending_properties|length }} property{% if pending_properties|length != 1 %}ies{% else %}y{% endif %} awaiting verification
+                Showing {{ pending_properties|length }} of {{ pending_properties_pagination.total }} property{% if pending_properties_pagination.total != 1 %}ies{% else %}y{% endif %}
 
             </small>
 
-            <button class="btn btn-link text-decoration-none">
-
-                View Complete List →
-
-            </button>
+            {% if pending_properties_pagination.pages > 1 %}
+            <nav aria-label="Property verification pagination">
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item {% if not pending_properties_pagination.has_prev %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('admin_dashboard', host_page=pending_hosts_pagination.page, property_page=pending_properties_pagination.prev_num, booking_page=recent_bookings_pagination.page, payment_page=recent_payments_pagination.page, host_search=filters.host_search, host_status=filters.host_status, property_search=filters.property_search, property_status=filters.property_status, booking_search=filters.booking_search, booking_status=filters.booking_status, payment_search=filters.payment_search, payment_status=filters.payment_status) }}#pending-property-verification">&laquo;</a>
+                    </li>
+                    {% for page_num in pending_properties_pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=1) %}
+                        {% if page_num %}
+                        <li class="page-item {% if page_num == pending_properties_pagination.page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('admin_dashboard', host_page=pending_hosts_pagination.page, property_page=page_num, booking_page=recent_bookings_pagination.page, payment_page=recent_payments_pagination.page, host_search=filters.host_search, host_status=filters.host_status, property_search=filters.property_search, property_status=filters.property_status, booking_search=filters.booking_search, booking_status=filters.booking_status, payment_search=filters.payment_search, payment_status=filters.payment_status) }}#pending-property-verification">{{ page_num }}</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled"><span class="page-link">…</span></li>
+                        {% endif %}
+                    {% endfor %}
+                    <li class="page-item {% if not pending_properties_pagination.has_next %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('admin_dashboard', host_page=pending_hosts_pagination.page, property_page=pending_properties_pagination.next_num, booking_page=recent_bookings_pagination.page, payment_page=recent_payments_pagination.page, host_search=filters.host_search, host_status=filters.host_status, property_search=filters.property_search, property_status=filters.property_status, booking_search=filters.booking_search, booking_status=filters.booking_status, payment_search=filters.payment_search, payment_status=filters.payment_status) }}#pending-property-verification">&raquo;</a>
+                    </li>
+                </ul>
+            </nav>
+            {% endif %}
 
         </div>
 
@@ -1041,13 +1132,29 @@
 
             </div>
 
-            <button class="btn btn-primary rounded-pill">
-
-                <i class="fa-solid fa-calendar-check me-2"></i>
-
-                View All
-
-            </button>
+            <form class="d-flex gap-2" method="get" action="{{ url_for('admin_dashboard') }}">
+                <input type="hidden" name="host_page" value="{{ pending_hosts_pagination.page }}">
+                <input type="hidden" name="property_page" value="{{ pending_properties_pagination.page }}">
+                <input type="hidden" name="payment_page" value="{{ recent_payments_pagination.page }}">
+                <input type="hidden" name="host_search" value="{{ filters.host_search }}">
+                <input type="hidden" name="host_status" value="{{ filters.host_status }}">
+                <input type="hidden" name="property_search" value="{{ filters.property_search }}">
+                <input type="hidden" name="property_status" value="{{ filters.property_status }}">
+                <input type="hidden" name="payment_search" value="{{ filters.payment_search }}">
+                <input type="hidden" name="payment_status" value="{{ filters.payment_status }}">
+                <input type="text" class="form-control" style="width:220px;" name="booking_search" placeholder="Search booking" value="{{ filters.booking_search }}">
+                <select class="form-select" style="width:170px;" name="booking_status">
+                    <option value="" {% if not filters.booking_status %}selected{% endif %}>All Status</option>
+                    <option value="paid" {% if filters.booking_status == 'paid' %}selected{% endif %}>Paid</option>
+                    <option value="pending_payment" {% if filters.booking_status == 'pending_payment' %}selected{% endif %}>Pending Payment</option>
+                    <option value="cancelled" {% if filters.booking_status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                </select>
+                <button class="btn btn-primary rounded-pill" type="submit">
+                    <i class="fa-solid fa-filter me-2"></i>
+                    Filter
+                </button>
+                <a class="btn btn-outline-secondary rounded-pill" href="{{ url_for('admin_dashboard') }}#recent-bookings">View All</a>
+            </form>
 
         </div>
 
@@ -1154,15 +1261,31 @@
 
             <small class="text-muted">
 
-                Total bookings: {{ stats.total_bookings }} | Paid: {{ stats.paid_bookings }} | Pending payment: {{ stats.pending_payment_bookings }}
+                Showing {{ recent_bookings|length }} of {{ recent_bookings_pagination.total }} bookings | Paid: {{ stats.paid_bookings }} | Pending payment: {{ stats.pending_payment_bookings }}
 
             </small>
 
-            <button class="btn btn-link text-decoration-none">
-
-                View Booking History →
-
-            </button>
+            {% if recent_bookings_pagination.pages > 1 %}
+            <nav aria-label="Bookings pagination">
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item {% if not recent_bookings_pagination.has_prev %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('admin_dashboard', host_page=pending_hosts_pagination.page, property_page=pending_properties_pagination.page, booking_page=recent_bookings_pagination.prev_num, payment_page=recent_payments_pagination.page, host_search=filters.host_search, host_status=filters.host_status, property_search=filters.property_search, property_status=filters.property_status, booking_search=filters.booking_search, booking_status=filters.booking_status, payment_search=filters.payment_search, payment_status=filters.payment_status) }}#recent-bookings">&laquo;</a>
+                    </li>
+                    {% for page_num in recent_bookings_pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=1) %}
+                        {% if page_num %}
+                        <li class="page-item {% if page_num == recent_bookings_pagination.page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('admin_dashboard', host_page=pending_hosts_pagination.page, property_page=pending_properties_pagination.page, booking_page=page_num, payment_page=recent_payments_pagination.page, host_search=filters.host_search, host_status=filters.host_status, property_search=filters.property_search, property_status=filters.property_status, booking_search=filters.booking_search, booking_status=filters.booking_status, payment_search=filters.payment_search, payment_status=filters.payment_status) }}#recent-bookings">{{ page_num }}</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled"><span class="page-link">…</span></li>
+                        {% endif %}
+                    {% endfor %}
+                    <li class="page-item {% if not recent_bookings_pagination.has_next %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('admin_dashboard', host_page=pending_hosts_pagination.page, property_page=pending_properties_pagination.page, booking_page=recent_bookings_pagination.next_num, payment_page=recent_payments_pagination.page, host_search=filters.host_search, host_status=filters.host_status, property_search=filters.property_search, property_status=filters.property_status, booking_search=filters.booking_search, booking_status=filters.booking_status, payment_search=filters.payment_search, payment_status=filters.payment_status) }}#recent-bookings">&raquo;</a>
+                    </li>
+                </ul>
+            </nav>
+            {% endif %}
 
         </div>
 
@@ -1194,13 +1317,29 @@
 
             </div>
 
-            <button class="btn btn-success rounded-pill">
-
-                <i class="fa-solid fa-wallet me-2"></i>
-
-                View All
-
-            </button>
+            <form class="d-flex gap-2" method="get" action="{{ url_for('admin_dashboard') }}">
+                <input type="hidden" name="host_page" value="{{ pending_hosts_pagination.page }}">
+                <input type="hidden" name="property_page" value="{{ pending_properties_pagination.page }}">
+                <input type="hidden" name="booking_page" value="{{ recent_bookings_pagination.page }}">
+                <input type="hidden" name="host_search" value="{{ filters.host_search }}">
+                <input type="hidden" name="host_status" value="{{ filters.host_status }}">
+                <input type="hidden" name="property_search" value="{{ filters.property_search }}">
+                <input type="hidden" name="property_status" value="{{ filters.property_status }}">
+                <input type="hidden" name="booking_search" value="{{ filters.booking_search }}">
+                <input type="hidden" name="booking_status" value="{{ filters.booking_status }}">
+                <input type="text" class="form-control" style="width:220px;" name="payment_search" placeholder="Search user" value="{{ filters.payment_search }}">
+                <select class="form-select" style="width:170px;" name="payment_status">
+                    <option value="" {% if not filters.payment_status %}selected{% endif %}>All Status</option>
+                    <option value="paid" {% if filters.payment_status == 'paid' %}selected{% endif %}>Paid</option>
+                    <option value="pending" {% if filters.payment_status == 'pending' %}selected{% endif %}>Pending</option>
+                    <option value="failed" {% if filters.payment_status == 'failed' %}selected{% endif %}>Failed</option>
+                </select>
+                <button class="btn btn-success rounded-pill" type="submit">
+                    <i class="fa-solid fa-filter me-2"></i>
+                    Filter
+                </button>
+                <a class="btn btn-outline-secondary rounded-pill" href="{{ url_for('admin_dashboard') }}#recent-payments">View All</a>
+            </form>
 
         </div>
 
@@ -1294,15 +1433,31 @@
 
             <small class="text-muted">
 
-                Total payments: {{ recent_payments|length }} | Paid: {{ stats.paid_payments }} | Pending: {{ stats.pending_payments }}
+                Showing {{ recent_payments|length }} of {{ recent_payments_pagination.total }} payments | Paid: {{ stats.paid_payments }} | Pending: {{ stats.pending_payments }}
 
             </small>
 
-            <button class="btn btn-link text-decoration-none">
-
-                View Payment History →
-
-            </button>
+            {% if recent_payments_pagination.pages > 1 %}
+            <nav aria-label="Payments pagination">
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item {% if not recent_payments_pagination.has_prev %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('admin_dashboard', host_page=pending_hosts_pagination.page, property_page=pending_properties_pagination.page, booking_page=recent_bookings_pagination.page, payment_page=recent_payments_pagination.prev_num, host_search=filters.host_search, host_status=filters.host_status, property_search=filters.property_search, property_status=filters.property_status, booking_search=filters.booking_search, booking_status=filters.booking_status, payment_search=filters.payment_search, payment_status=filters.payment_status) }}#recent-payments">&laquo;</a>
+                    </li>
+                    {% for page_num in recent_payments_pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=1) %}
+                        {% if page_num %}
+                        <li class="page-item {% if page_num == recent_payments_pagination.page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('admin_dashboard', host_page=pending_hosts_pagination.page, property_page=pending_properties_pagination.page, booking_page=recent_bookings_pagination.page, payment_page=page_num, host_search=filters.host_search, host_status=filters.host_status, property_search=filters.property_search, property_status=filters.property_status, booking_search=filters.booking_search, booking_status=filters.booking_status, payment_search=filters.payment_search, payment_status=filters.payment_status) }}#recent-payments">{{ page_num }}</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled"><span class="page-link">…</span></li>
+                        {% endif %}
+                    {% endfor %}
+                    <li class="page-item {% if not recent_payments_pagination.has_next %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('admin_dashboard', host_page=pending_hosts_pagination.page, property_page=pending_properties_pagination.page, booking_page=recent_bookings_pagination.page, payment_page=recent_payments_pagination.next_num, host_search=filters.host_search, host_status=filters.host_status, property_search=filters.property_search, property_status=filters.property_status, booking_search=filters.booking_search, booking_status=filters.booking_status, payment_search=filters.payment_search, payment_status=filters.payment_status) }}#recent-payments">&raquo;</a>
+                    </li>
+                </ul>
+            </nav>
+            {% endif %}
 
         </div>
 
@@ -1339,11 +1494,11 @@
 
                     </div>
 
-                    <button class="btn btn-outline-primary rounded-pill btn-sm">
+                    <a class="btn btn-outline-primary rounded-pill btn-sm" href="{{ url_for('admin_dashboard') }}#recent-reports">
 
                         View All
 
-                    </button>
+                    </a>
 
                 </div>
 
@@ -1766,21 +1921,38 @@
 
         $('.verify-host-btn').click(function() {
             const userId = $(this).data('id');
-            const verified = $(this).data('verified');
-            const action = verified ? 'approve' : 'reject';
-            const button = $(this);
             $.ajax({
                 url: `/admin/hosts/${userId}/verify`,
                 type: 'POST',
                 contentType: 'application/json',
                 headers: { 'X-CSRFToken': csrfToken },
-                data: JSON.stringify({ verified }),
                 success: function(response) {
-                    button.closest('tr').remove();
-                    showAlert(`Host ${action}d successfully.`, 'success');
+                    showAlert('Host verified successfully.', 'success');
+                    window.location.reload();
                 },
                 error: function(xhr) {
                     const message = xhr.responseJSON?.message || 'Unable to update host verification.';
+                    showAlert(message, 'danger');
+                }
+            });
+        });
+
+        $('.suspend-host-btn').click(function() {
+            const userId = $(this).data('id');
+            const reason = window.prompt('Enter suspension reason (optional):', '') || '';
+
+            $.ajax({
+                url: `/admin/hosts/${userId}/suspend`,
+                type: 'POST',
+                contentType: 'application/json',
+                headers: { 'X-CSRFToken': csrfToken },
+                data: JSON.stringify({ reason }),
+                success: function(response) {
+                    showAlert('Host suspended successfully.', 'warning');
+                    window.location.reload();
+                },
+                error: function(xhr) {
+                    const message = xhr.responseJSON?.message || 'Unable to suspend host.';
                     showAlert(message, 'danger');
                 }
             });

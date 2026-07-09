@@ -1,4 +1,4 @@
-from flask import render_template, request, url_for, redirect, flash, session, jsonify, current_app
+from flask import render_template, request, url_for, redirect, flash, session, jsonify, current_app, send_from_directory, abort
 from decimal import Decimal
 import os, uuid
 from werkzeug.security import check_password_hash
@@ -18,12 +18,70 @@ def admin_dashboard():
         return redirect(url_for('admin_login'))
 
     admin_id = session['adminonline']
-    dashboard_context = admin_service.get_dashboard_context(admin_id)
+
+    host_page = request.args.get('host_page', 1, type=int)
+    property_page = request.args.get('property_page', 1, type=int)
+    booking_page = request.args.get('booking_page', 1, type=int)
+    payment_page = request.args.get('payment_page', 1, type=int)
+
+    host_search = request.args.get('host_search', '').strip()
+    host_status = request.args.get('host_status', '').strip()
+    property_search = request.args.get('property_search', '').strip()
+    property_status = request.args.get('property_status', 'pending').strip().lower()
+    booking_search = request.args.get('booking_search', '').strip()
+    booking_status = request.args.get('booking_status', '').strip().lower()
+    payment_search = request.args.get('payment_search', '').strip()
+    payment_status = request.args.get('payment_status', '').strip().lower()
+
+    dashboard_context = admin_service.get_dashboard_context(
+        admin_id,
+        host_page=host_page,
+        property_page=property_page,
+        booking_page=booking_page,
+        payment_page=payment_page,
+        host_search=host_search,
+        host_status=host_status,
+        property_search=property_search,
+        property_status=property_status,
+        booking_search=booking_search,
+        booking_status=booking_status,
+        payment_search=payment_search,
+        payment_status=payment_status,
+    )
 
     return render_template(
         'admin/admin_dashboard.html',
         **dashboard_context
     )
+
+
+@app.route('/admin/hosts/<int:user_id>/nin-document', methods=['GET'])
+def view_host_nin_document(user_id):
+    if 'adminonline' not in session:
+        flash("Please login first.", "errormsg")
+        return redirect(url_for('admin_login'))
+
+    host = User.query.filter_by(user_id=user_id, user_role='host').first_or_404()
+    if not host.nin_document:
+        abort(404)
+
+    normalized = os.path.normpath(host.nin_document).replace('\\', '/')
+    if normalized.startswith('../') or normalized.startswith('/'):
+        abort(400)
+
+    upload_root = current_app.config.get('UPLOAD_FOLDER', 'private_uploads')
+    if not os.path.isabs(upload_root):
+        upload_root = os.path.abspath(os.path.join(current_app.root_path, '..', upload_root))
+
+    absolute_path = os.path.abspath(os.path.join(upload_root, normalized))
+    if not absolute_path.startswith(upload_root):
+        abort(403)
+    if not os.path.isfile(absolute_path):
+        abort(404)
+
+    directory = os.path.dirname(absolute_path)
+    filename = os.path.basename(absolute_path)
+    return send_from_directory(directory, filename, as_attachment=False)
 
 
 
@@ -406,14 +464,28 @@ def verify_host(user_id):
     if 'adminonline' not in session:
         return jsonify({"status": "error", "message": "Unauthorized"}), 401
 
-    verified = request.json.get('verified', True) if request.is_json else request.form.get('verified', True)
-    verified = parse_bool(verified)
-    user = admin_service.verify_host(user_id, verified)
+    admin_id = session['adminonline']
+    user = admin_service.mark_host_verified(user_id, admin_id)
 
     if not user:
         return jsonify({"status": "error", "message": "Host not found"}), 404
 
-    return jsonify({"status": "success", "message": "Host verification updated"})
+    return jsonify({"status": "success", "message": "Host verified successfully"})
+
+
+@app.route('/admin/hosts/<int:user_id>/suspend', methods=['POST'])
+def suspend_host(user_id):
+    if 'adminonline' not in session:
+        return jsonify({"status": "error", "message": "Unauthorized"}), 401
+
+    reason = request.json.get('reason') if request.is_json else request.form.get('reason')
+    admin_id = session['adminonline']
+    user = admin_service.mark_host_suspended(user_id, admin_id, reason)
+
+    if not user:
+        return jsonify({"status": "error", "message": "Host not found"}), 404
+
+    return jsonify({"status": "success", "message": "Host suspended successfully"})
 
 
 @app.route('/admin/bookings/<int:booking_id>/status', methods=['POST'])

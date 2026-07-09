@@ -1,0 +1,265 @@
+{% extends "user/layout.html" %}
+{% block main_content %}    
+
+ <div id="addprop" class="dashboard-card mt-5">
+                    <div class="d-flex justify-content-between align-items-center my-4">
+                        <div>
+                          <h3 class="fw-bold mt-3">
+                            Add New Property
+                          </h3>
+                          <p class="text-muted">
+                            Submit a new property for admin review. Once approved, it will go live.
+                          </p>
+                        </div>
+                        <button form="hostAddPropertyForm" type="submit" class="searchbtn">
+                          Submit For Review
+                        </button>
+                  </div>
+                  <div id="responseMessage"></div>
+                  <form id="hostAddPropertyForm" method="POST" enctype="multipart/form-data">
+                    {% if csrf_token %}
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    {% endif %}
+                    <div class="row mb-4">
+                      <div class="col-md-6">
+                        <label class="form-label">Property Title</label>
+                        <input name="prop_title" type="text" class="form-control" placeholder="Enter property title" required>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-control-label">Property Type</label>
+                        <select name="prop_typeid" class="form-select form-select-lg" required>
+                          <option value="">Select Type</option>
+                          {% for type in property_types %}
+                          <option value="{{ type.prop_type_id }}">{{ type.prop_typename }}</option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                    </div>
+                    <div class="row mb-4">
+                      <div class="col-md-6">
+                        <label class="form-label">State</label>
+                        <select id="prop_stateid" name="prop_stateid" class="form-select" required>
+                          <option value="">Select State</option>
+                          {% for state in property_states %}
+                          <option value="{{ state.state_id }}">{{ state.state_name }}</option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label">LGA</label>
+                        <select id="prop_lgaid" name="prop_lgaid" class="form-select" required>
+                          <option value="">Select Local Government</option>
+                        </select>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label">City</label>
+                        <input name="prop_city" type="text" class="form-control" placeholder="Enter city" required>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-control-label">Price per night</label>
+                        <input name="price_per_night" type="number" min="0" class="form-control" placeholder="Enter price per night" required>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label">Bedrooms</label>
+                        <input name="bedrooms" type="number" min="0" class="form-control" placeholder="Enter number of bedrooms" required>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label">Bathrooms</label>
+                        <input name="bathrooms" type="number" min="0" class="form-control" placeholder="Enter number of bathrooms" required>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label">Max Guests</label>
+                        <input name="max_guest" type="number" min="1" class="form-control" placeholder="Enter max guests" required>
+                      </div>
+                      <div class="col-12 mb-4">
+                        <label class="form-label">
+                          Description
+                        </label>
+                        <textarea name="prop_description" class="form-control" rows="5" placeholder="Describe your property" required></textarea>
+                      </div>
+                      <div class="col-12 mb-4">
+                        <label class="form-label">
+                          Property Address
+                        </label>
+                        <textarea name="prop_address" class="form-control" rows="3" placeholder="Enter full property address" required></textarea>
+                      </div>
+                      <div class="col-12 mb-4">
+                        <label class="form-label">
+                          Featured Image
+                        </label>
+                        <input name="featured_image" type="file" class="form-control" accept="image/*" required>
+                      </div>
+                      <div class="col-12 mb-4">
+                        <label class="form-label">
+                          Gallery Images
+                        </label>
+                        <input name="property_images" type="file" class="form-control" accept="image/*" multiple>
+                      </div>
+                    </div>
+                    <div class="row mb-4">
+                      <div class="col-12">
+                        <h5 class="fw-bold mb-3">Amenities</h5>
+                        <div class="row" id="hostAmenitiesCheckboxes">
+                          {% for amenity in amenities %}
+                          <div class="col-md-3 mb-3">
+                            <div class="form-check">
+                              <input class="form-check-input" type="checkbox" name="amenities" id="hostAmenity{{ amenity.amenity_id }}" value="{{ amenity.amenity_id }}">
+                              <label class="form-check-label" for="hostAmenity{{ amenity.amenity_id }}">{{ amenity.amenity_name }}</label>
+                            </div>
+                          </div>
+                          {% endfor %}
+                        </div>
+                      </div>
+                    </div>
+                  </form>
+                      </div>
+                      <div id="amenities" class="dashboard-card mb-5">
+                  <div class="d-flex justify-content-between align-items-center mb-4">
+                      <div>
+                        <h3 class="fw-bold">
+                          Property Amenities
+                        </h3>
+                        <p class="text-muted">
+                          Create and manage amenities
+                        </p>
+                      </div>
+                          <button class="btn searchbtn" type="button" id="hostAmenityAddBtnTop">
+                        Add Amenities
+                      </button>
+                 </div>
+                 <div class="row mb-4">
+                    <div class="col-md-10">
+                        <input type="text" id="hostAmenityName" class="form-control form-control-lg" placeholder="Add amenity e.g Swimming Pool">
+                    </div>
+                    <div class="col-md-2 d-grid">
+                          <button class="btn btn-outline-primary" type="button" id="hostAmenitySaveBtn">Save</button>
+                    </div>
+                 </div>
+                         <div id="hostAmenitiesBadgeList">
+                      {% for amenity in amenities %}
+                      <span class="amenity-badge" id="hostAmenityBadge{{ amenity.amenity_id }}">
+                        {{ amenity.amenity_name }}
+                      </span>
+                      {% endfor %}
+                 </div>
+                </div>
+
+{% endblock %}
+
+{% block customjs %}
+    <script>
+        $(document).ready(function(){
+            const csrfToken = "{{ csrf_token() }}";
+
+            function appendAmenityCheckbox(amenity){
+                if (!amenity || !amenity.amenity_id){
+                    return;
+                }
+                const checkboxId = `amenity${amenity.amenity_id}`;
+                if (document.getElementById(checkboxId)){
+                    document.getElementById(checkboxId).checked = true;
+                    return;
+                }
+                const html = `
+                    <div class="col-md-3 mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="amenities" id="${checkboxId}" value="${amenity.amenity_id}" checked>
+                            <label class="form-check-label" for="${checkboxId}">${amenity.amenity_name}</label>
+                        </div>
+                    </div>
+                `;
+                $('#amenitiesContainer').prepend(html);
+            }
+
+            $('#saveAmenityBtn').click(function(){
+                const button = $(this);
+                const amenityName = $('#newAmenityName').val().trim();
+                if (!amenityName){
+                    $('#responseMessage').html('<div class="alert alert-danger">Enter an amenity name first.</div>');
+                    return;
+                }
+                button.prop('disabled', true).text('Saving...');
+                $.ajax({
+                    url: '/admin/amenities',
+                    type: 'POST',
+                    headers: { 'X-CSRFToken': csrfToken },
+                    data: { amenity_name: amenityName },
+                    success: function(response){
+                        appendAmenityCheckbox(response.amenity);
+                        $('#newAmenityName').val('');
+                        $('#responseMessage').html(`<div class="alert alert-success">${response.message}</div>`);
+                    },
+                    error: function(xhr){
+                        const message = xhr.responseJSON?.message || 'Unable to save amenity.';
+                        $('#responseMessage').html(`<div class="alert alert-danger">${message}</div>`);
+                    },
+                    complete: function(){
+                        button.prop('disabled', false).html('<i class="fa-solid fa-plus me-2"></i>Save Amenity');
+                    }
+                });
+            });
+
+            $('#addPropertyForm').submit(function(e){
+                e.preventDefault()
+            let form = document.getElementById('addPropertyForm');
+            let formData = new FormData(form);
+            $('#savePropertyBtn').prop("disabled", true).html(
+                `<span class='spinner-border spinner-border-sm mb-3'></span>
+                    <img src="/static/images/loading.gif" atl="spinner" width="50" >
+                `);
+                $.ajax({
+                    url: "{{url_for('save_property')}}",
+                    type: 'POST',
+                    data: formData,
+                    cache: false,
+                    processData: false,
+                    contentType: false,
+                    success: function(response){
+                        if (response.status === "success"){
+                            $('#responseMessage').html(`<div class="alert alert-success">${response.message}</div>`)
+                            $('#addPropertyForm')[0].reset();
+                            $("#featuredPreview").html("");
+                            $("#galleryPreview").html("")
+                        }
+                        else{
+                            $('#responseMessage').html(`<div class="alert alert-danger">${response.message}</div>`)
+                        }
+                    },
+                    error: function(xhr){
+                        let message = "Something went wrong";
+                        if (xhr.responseJSON && xhr.responseJSON.message){
+
+                        message = xhr.responseJSON.message;
+                        }
+                        $('#responseMessage').html(`<div class="alert alert-danger">${message}</div>`)
+                    },
+                    complete: function(){
+                        $('#savePropertyBtn').prop("disabled", false).html(`<i class="fa-solid fa-floppy-disk me-2"></i>
+                            Save Property
+                    `);
+                    }
+                });
+            });
+            $('#prop_stateid').change(function () {
+
+            let stateID = $(this).val();
+
+            $.get('/get-lgas/' + stateID, function (response) {
+
+             let html = "<option value=''>Select Local Government</option>";
+
+            response.forEach(function (lga) {
+
+            html += `<option value="${lga.id}">
+                        ${lga.name}
+                     </option>`;
+        });
+
+        $('#prop_lgaid').html(html);
+
+    });
+
+});
+        });
+    </script>
+{% endblock %}

@@ -11,7 +11,7 @@
                             <p class="text-muted">Access variety of verified apartment</p>
                         </div>
                         {% include 'user/alert.html' %}
-                        <form action="{{url_for('register')}}" method="post" novalidate>
+                        <form action="{{url_for('register')}}" method="post" enctype="multipart/form-data" novalidate>
                             {{ register.hidden_tag() }}
                             <div class="row mb-3">
                                 <div class="col-md-6">
@@ -73,6 +73,31 @@
                                      {%endfor%}
                                 </div>
                             </div>
+                            <div id="host-verification-fields" class="d-none">
+
+    <div class="mb-3">
+        {{ register.nin_number.label(class="form-label") }}
+        {{ register.nin_number(class="form-control") }}
+
+        {% for error in register.nin_number.errors %}
+            <div class="text-danger small">{{ error }}</div>
+        {% endfor %}
+    </div>
+
+    <div class="mb-3">
+        {{ register.nin_document.label(class="form-label") }}
+        {{ register.nin_document(class="form-control") }}
+
+        <small class="text-muted">
+            Upload a clear copy of your NIN Slip or NIN Card.
+        </small>
+
+        {% for error in register.nin_document.errors %}
+            <div class="text-danger small">{{ error }}</div>
+        {% endfor %}
+    </div>
+
+</div>
                             <div class="mb-4 form-check">
                                 <input type="checkbox" class="form-check-input" id="termsCheck" required>
                                 <label class="form-check-label text-muted" for="termsCheck">I agree to the <a href="#" class="text-decoration-none">Terms of Service</a> and <a href="#" class="text-decoration-none">Privacy Policy</a>.</label>
@@ -92,15 +117,46 @@
     </div>
 {% endblock %}
 {% block customjs %}
-   <script>
-        $(document).ready(function(){
-            $('#email').change(function(){
-                var email = $(this).val()
-                var dataForm = "email=" +email
-                $('#feedback').load('/check/email/',dataForm);
-            })
-        })
-    </script>
+<script>
+$(document).ready(function () {
+
+    // Check if email already exists
+    $('#email').on('change', function () {
+        let email = $(this).val();
+
+        $('#feedback').load('/check/email/', {
+            email: email
+        });
+    });
+
+    // Host verification fields
+    const roleSelect = $('#role');
+    const hostFields = $('#host-verification-fields');
+    const ninNumberField = $('#nin_number');
+    const ninDocumentField = $('#nin_document');
+
+    function toggleHostFields() {
+        const roleValue = (roleSelect.val() || '').toLowerCase();
+        if (roleValue === 'host') {
+            hostFields.removeClass('d-none');
+            ninNumberField.prop('required', true);
+            ninDocumentField.prop('required', true);
+        } else {
+            hostFields.addClass('d-none');
+            ninNumberField.prop('required', false);
+            ninDocumentField.prop('required', false);
+        }
+
+    }
+
+    // Run when page loads
+    toggleHostFields();
+
+    // Run when role changes
+    roleSelect.on('change', toggleHostFields);
+
+});
+</script>
 {% endblock %}
 
                        

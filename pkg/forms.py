@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SelectField, SubmitField, DateField, IntegerField, TextAreaField, BooleanField
-from wtforms.validators import DataRequired, Email, EqualTo, Length
+from flask_wtf.file import FileAllowed
+from wtforms import FileField, StringField, PasswordField, SelectField, SubmitField, DateField, IntegerField, TextAreaField, BooleanField
+from wtforms.validators import DataRequired, Email, EqualTo, Length, Optional, Regexp
 
 
 class RegisterForm(FlaskForm):
@@ -11,6 +12,18 @@ class RegisterForm(FlaskForm):
      password = PasswordField( "Password", validators=[DataRequired(), Length(min=6)], render_kw={"placeholder": "Enter your password"} ) 
      confirm_pass = PasswordField( "Confirm Password", validators=[ DataRequired(), EqualTo("password", message="Passwords must match.") ], render_kw={"placeholder": "Confirm your password"} ) 
      role = SelectField( "Role", choices=[ ("customer", "Customer"), ("host", "Host")], default="customer" ) 
+     nin_number = StringField(
+          "NIN Number",
+          validators=[
+               Optional(),
+               Regexp(r"^\d{11}$", message="NIN must be exactly 11 digits."),
+          ],
+          render_kw={"placeholder": "Enter your NIN Number"},
+     )
+     nin_document = FileField(
+          "NIN Document",
+          validators=[Optional(), FileAllowed(["pdf", "jpg", "jpeg", "png"], "Only PDF, JPG, JPEG and PNG files are allowed.")],
+     )
      submit = SubmitField("Register")
 
 
@@ -20,9 +33,9 @@ class AdminRegisterForm(FlaskForm):
      email = StringField( "Email Address", validators=[DataRequired(), Email()], render_kw={"placeholder": "Enter your email address"} ) 
      password = PasswordField( "Password", validators=[DataRequired(), Length(min=6)], render_kw={"placeholder": "Enter your password"} ) 
      confirm_pass = PasswordField( "Confirm Password", validators=[ DataRequired(), EqualTo("password", message="Passwords must match.") ], render_kw={"placeholder": "Confirm your password"} ) 
+     nin_number = StringField("NIN Number",validators=[Optional(), Length(min=11, max=20, message="Enter a valid NIN number.")], render_kw={"placeholder": "Enter your NIN Number"})
+     nin_document = FileField("NIN Document",validators=[Optional(),FileAllowed(["pdf", "jpg", "jpeg", "png"],"Only PDF, JPG, JPEG and PNG files are allowed.")])
      submit = SubmitField("Register")
-
-
 
 
 class LoginForm(FlaskForm):
