@@ -1,9 +1,12 @@
-from flask import Flask, jsonify, request
+from flask import Flask, app, jsonify, request, session
 from flask_wtf.csrf import CSRFProtect
 from flask_migrate import Migrate
 from dotenv import load_dotenv
 from werkzeug.exceptions import RequestEntityTooLarge
-
+from pkg.notification_routes import notification_bp
+from pkg.notification_api import notification_api
+from pkg.notification_service import NotificationService
+from pkg.utils.time_helper import time_ago
 
 from pkg.config import ProConfig
 
@@ -18,11 +21,16 @@ def create_app():
     app= Flask(__name__,instance_relative_config=True)
     app.config.from_pyfile('config.py')
     app.config.from_object(ProConfig)
-
+    
+    app.register_blueprint(notification_bp)
+    app.register_blueprint(notification_api)
+    app.jinja_env.globals["time_ago"] = time_ago
    
     db.init_app(app)
     migrate  = Migrate(app,db)
     csrf.init_app(app)
+
+    
 
     @app.errorhandler(RequestEntityTooLarge)
     def handle_request_entity_too_large(_error):
@@ -38,6 +46,23 @@ def create_app():
             return jsonify({"status": "error", "message": message}), 413
 
         return message, 413
+    @app.context_processor
+    def inject_notifications():
+        user_id = session.get("useronline")
+
+        if not user_id:
+            return dict(
+                notifications=[],
+                unread_notifications=0
+            )
+
+        notifications = NotificationService.get_notifications(user_id)
+        unread = NotificationService.unread_count(user_id)
+
+        return dict(
+            notifications=notifications,
+            unread_notifications=unread
+        )
 
     return app
 app = create_app()

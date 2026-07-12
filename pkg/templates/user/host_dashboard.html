@@ -120,12 +120,107 @@
                          </div>
                          <div class="col-lg-6">
                              <div class="d-flex justify-content-lg-end align-items-center gap-3">
-                                 <button class="btn btn-light position-relative">
-                                     <i class="fa-solid fa-bell"></i>
-                                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                         3
-                                     </span>
-                                 </button>
+                                 <div class="notification-wrapper">
+                                 <div class="dropdown">
+
+    <button
+        class="btn btn-light position-relative"
+        type="button"
+        id="notificationDropdown"
+        data-bs-toggle="dropdown"
+        aria-expanded="false">
+
+        <i class="fa-solid fa-bell"></i>
+
+        {% if unread_notifications > 0 %}
+        <span id="notification-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+            {{ unread_notifications }}
+        </span>
+        {% endif %}
+
+    </button>
+
+    <div class="dropdown-menu dropdown-menu-end p-0 shadow"
+         aria-labelledby="notificationDropdown"
+         style="width:350px; max-height:450px; overflow-y:auto;">
+
+        <div class="p-3 border-bottom">
+            <strong>Notifications</strong>
+        </div>
+
+        {% if notifications %}
+
+            {% for notification in notifications[:5] %}
+
+            <a href="{{ url_for('notification.notification_detail',notification_id=notification.notification_id) }}"
+               class=" notification-link dropdown-item py-3 {% if not notification.notification_is_read %}bg-light{% endif %}"
+               data-id="{{ notification.notification_id }}">
+
+                <div class="d-flex">
+
+                    <div class="me-3">
+
+                        <i class="fa-solid fa-{{ notification.notification_icon }} text-primary"></i>
+
+                    </div>
+
+                    <div class="flex-grow-1">
+
+                        <strong>
+
+                            {{ notification.notification_title }}
+
+                        </strong>
+
+                        <div class="small text-muted">
+
+                            {{ notification.notification_message }}
+
+                        </div>
+
+                        <small class="text-secondary">
+
+                            {{ time_ago(notification.notification_timecreated) }}
+
+                        </small>
+
+                    </div>
+
+                </div>
+
+            </a>
+
+            {% endfor %}
+
+            <div class="text-center border-top">
+
+                <a href="{{ url_for('notification.all_notifications') }}">
+                      View All Notifications
+                </a>
+
+            </div>
+
+        {% else %}
+
+            <div class="text-center p-4">
+
+                <i class="fa-regular fa-bell-slash fs-3 text-muted"></i>
+
+                <p class="mt-2 mb-0">
+
+                    No notifications yet
+
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+                                 </div>
+                                 
+                                 </div>
                                  <img src="/static/images/randomuser.jpg" alt="{{deets.user_role}}" class="avatar">
                                  <div>
                                      <h5 class="mb-0">
@@ -633,7 +728,7 @@
     {% endif %}
 {% block customjs %}
 <script>
-    $(document).ready(function(){
+    $(function () {
     const csrfToken = $('input[name="csrf_token"]').first().val() || "";
 
     $('#hostProfileForm').submit(function(e){
@@ -692,9 +787,9 @@
           $('#responseMessage').html(`<div class="alert alert-success">${response.message}</div>`);
         },
         error: function(xhr){
-          const message = xhr.responseJSON?.message || (xhr.status === 400 && String(xhr.responseText || '').toLowerCase().includes('csrf')
-            ? 'Session expired. Refresh this page and try again.'
-            : 'Unable to save amenity.');
+          const message = xhr.responseJSON && xhr.responseJSON.message
+              ? xhr.responseJSON.message
+              : 'Unable to save amenity.';
           $('#responseMessage').html(`<div class="alert alert-danger">${message}</div>`);
         },
         complete: function(){
@@ -725,7 +820,7 @@
             e.preventDefault();
             let form = document.getElementById('hostAddPropertyForm');
             let formData = new FormData(form);
-          const submitBtn = $('button[form="hostAddPropertyForm"]');
+            const submitBtn = $(this).find('button[type="submit"]');
           submitBtn.prop('disabled', true).text('Submitting...');
             $.ajax({
                 url: '/host/property/add',
@@ -758,6 +853,48 @@
             });
         });
     });
+   
+
+function refreshNotificationCount(){
+
+    $.get("/notifications/unread-count", function(response){
+
+        const badge = $("#notification-count");
+
+        if(response.count > 0){
+
+            badge.text(response.count);
+
+            badge.show();
+
+        }else{
+
+            badge.hide();
+
+        }
+
+    });
+    
+}
+
+$(".notification-link").click(function(e){
+
+    e.preventDefault();
+
+    const notificationId = $(this).data("id");
+
+    const url = $(this).attr("href");
+
+    $.post("/notifications/" + notificationId + "/read", function(){
+
+        refreshNotificationCount();
+
+        window.location = url;
+
+    });
+
+});
+
 </script>
 {% endblock %}
 {% endblock %}

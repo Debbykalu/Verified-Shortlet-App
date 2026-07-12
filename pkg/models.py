@@ -482,10 +482,6 @@ class Booking(db.Model):
         default=datetime.utcnow
     )
 
-class Item(db.Model):
-    item_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    item_name = db.Column(db.String(100), unique=True, nullable=False)
-    item_amount = db.Column(Numeric(12, 2), nullable=False)
 
 class PropertyImage(db.Model):
 
@@ -537,3 +533,81 @@ class BookingPayment(db.Model):
 
     user = db.relationship("User", backref="booking_payments")
     booking_detail = db.relationship("BookingDetail", backref="payments")
+
+class Notification(db.Model):
+    __tablename__ = "notifications"
+
+    notification_id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+
+    recipient_user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("users.user_id"),
+        nullable=False
+    )
+
+    notification_title = db.Column(
+        db.String(200),
+        nullable=False
+    )
+
+    notification_message = db.Column(
+        db.Text,
+        nullable=False
+    )
+
+    notification_type = db.Column(
+        db.String(50),
+        nullable=False
+    )
+
+    notification_icon = db.Column(
+        db.String(50),
+        default="bell"
+    )
+
+    notification_reference_type = db.Column(
+    db.String(50),
+    nullable=True
+  )
+
+    notification_reference_id = db.Column(
+    db.Integer,
+    nullable=True
+  )
+
+    notification_read_at = db.Column(
+    db.DateTime,
+    nullable=True
+   )
+
+    notification_timecreated = db.Column(
+        db.DateTime,
+        default=datetime.utcnow
+    )
+
+    notification_timeupdated = db.Column(
+        db.DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow
+    )
+    notification_reference_type = db.Column(
+    db.String(50),
+    nullable=True
+    )
+
+    notification_reference_id = db.Column(
+    db.Integer,
+    nullable=True
+    )
+    notification_is_read = db.Column(
+    db.Boolean,
+    default=False,
+    nullable=False
+    )
+   
+
+    def __repr__(self):
+        return f"<Notification {self.notification_title}>"

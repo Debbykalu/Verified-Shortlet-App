@@ -690,3 +690,56 @@ margin-bottom: 20px;
 .tab-pane.active{
   display:block;
 }
+.notification-card{
+
+    border:none;
+
+    border-radius:14px;
+
+    transition:.25s;
+
+}
+
+.notification-card:hover{
+
+    transform:translateY(-2px);
+
+    box-shadow:0 8px 25px rgba(0,0,0,.08);
+
+}
+
+.notification-unread{
+
+    border-left:5px solid #0d6efd;
+
+    background:#f8fbff;
+
+}
+
+.notification-unread h5{
+
+    font-weight:700;
+
+}
+
+.notification-unread::before{
+
+    content:"";
+
+    width:10px;
+
+    height:10px;
+
+    background:#0d6efd;
+
+    border-radius:50%;
+
+    display:inline-block;
+
+    margin-right:8px;
+
+}
+.card-title-text{
+  text-decoration: none;
+  color: #000;
+}

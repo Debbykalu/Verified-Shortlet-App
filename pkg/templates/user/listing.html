@@ -214,9 +214,10 @@
                                             {% else %}
                                                 <span class="badge bg-secondary">Pending</span>
                                             {% endif %}
-                                            <p class="text-muted mb-2">{{ prop.prop_city or prop.prop_address or prop.prop_category }}, {{ prop.state.state_name if prop.state else '' }}</p>
+                                            
                                         </div>
                                         <h4 class="card-title">{{ prop.prop_title }}</h4>
+                                        <p class="text-muted mb-2">{{ prop.prop_address or prop.prop_category or prop.prop_city }}, {{ prop.state.state_name if prop.state else '' }}</p>
                                         <div class="d-flex gap-3 small text-muted mb-3">
                                             <span><i class="fa-solid fa-bed"></i> {{ prop.bedrooms or 0 }} Beds</span>
                                             <span><i class="fa-solid fa-bath"></i> {{ prop.bathrooms or 0 }} Baths</span>

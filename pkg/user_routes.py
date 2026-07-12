@@ -14,6 +14,8 @@ from pkg import app
 from pkg.dashboard_service import DashboardService
 from pkg.forms import RegisterForm, LoginForm, BookingDetailsForm
 from pkg.models import User, Property, Amenity, BookingDetail, BookingPayment, db
+from pkg.notification_service import NotificationService
+from pkg.utils.notification_constants import NotificationType
 from pkg.utils.upload import save_nin_document
 
 dashboard_service = DashboardService()
@@ -418,6 +420,30 @@ def paystack_landing():
 
         db.session.commit()
 
+        NotificationService.notify(
+           user_id=booking_detail.booking_userid,
+           title="Payment Successful",
+           message=(
+             f"Your payment for "
+             f"{booking_detail.property.prop_title} "
+             f"was successful. Your booking has been confirmed."
+            ),
+           notification_type=NotificationType.PAYMENT_SUCCESS,
+           link=f"/confirmation"
+)
+
+        NotificationService.notify(
+            user_id=booking_detail.property.prop_userid,
+            title="New Paid Booking",
+            message=(
+                f"{booking_detail.full_name} has successfully "
+                f"booked your property "
+                f"{booking_detail.property.prop_title}."
+            ),
+            notification_type=NotificationType.HOST_NEW_BOOKING,
+            link="/host/bookings"
+        )
+
         session["last_confirmed_booking_id"] = booking_detail.booking_detail_id
         session.pop("payref", None)
         session.pop("pay_booking_detail_id", None)
@@ -434,6 +460,17 @@ def paystack_landing():
         "errormsg"
     )
 
+    NotificationService.notify(
+    user_id=booking_detail.booking_userid,
+    title="Payment Failed",
+    message=data.get(
+        "gateway_response",
+        "Your payment could not be verified."
+    ),
+    notification_type=NotificationType.PAYMENT_FAILED,
+    link=f"/payment/{booking_detail.booking_detail_id}"
+    )
+
     return redirect(
         url_for(
             "payment",
@@ -441,7 +478,7 @@ def paystack_landing():
         )
     )
 
-@app.route('/listing')
+@app.route('/listing/')
 def listing():
     search_values = {
         'location': request.args.get('location', '').strip(),
