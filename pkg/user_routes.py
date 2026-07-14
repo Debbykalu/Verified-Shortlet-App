@@ -75,6 +75,14 @@ def _booking_id_from_reference(ref):
         return int(parts[1])
     return None
 
+@app.errorhandler(404)
+def page_not_found(error):
+    return render_template('user/404.html', error=error),404
+
+@app.errorhandler(503)
+def page_under_maintenance(error):
+    return render_template('user/503.html', error=error),503
+
 @app.route('/')
 def home():
     deets = None
@@ -140,37 +148,30 @@ def payment():
 
 @app.route('/pay/<int:booking_detail_id>/', methods=['GET', 'POST'])
 def pay_booking(booking_detail_id):
-    if session.get('useronline') is None:
-        flash('You must be logged in to view this page', category='errormsg')
-        return redirect(url_for('login'))
-
     booking_detail = BookingDetail.query.get_or_404(booking_detail_id)
     if booking_detail.booking_userid and booking_detail.booking_userid != session.get('useronline'):
+        if session.get('useronline') is None:
+            flash('Please log in to pay for this booking.', category='errormsg')
+            return redirect(url_for('login'))
         flash('This booking does not belong to you', category='errormsg')
         return redirect(url_for('listing'))
 
     if booking_detail.booking_status == 'paid':
         flash('This booking has already been paid for.', category='successmsg')
-        return redirect(url_for('confirmation'))
+        return redirect(url_for('confirmation', booking_detail_id=booking_detail.booking_detail_id))
 
-    return redirect(url_for('paystack_init', booking_detail_id=booking_detail.booking_detail_id))
+    return redirect(url_for('payment', booking_detail_id=booking_detail.booking_detail_id))
 
 
 @app.route('/paystack-initialize/', methods=['POST'])
 def paystack_init():
-    print("SECRET KEY:", repr(current_app.config["PAYSTACK_SECRET_KEY"]))
-    print("PUBLIC KEY:", repr(current_app.config["PAYSTACK_PUBLIC_KEY"]))
-    print(repr(current_app.config["PAYSTACK_SECRET_KEY"]))
-    # -----------------------------
-    # Ensure user is logged in
-    # -----------------------------
-    if session.get("useronline") is None:
-        flash("You must be logged in.", "errormsg")
-        return redirect(url_for("login"))
+    logged_in_user = session.get("useronline")
+    if logged_in_user:
+        user_id = logged_in_user
+    else:
+        user_id = None
 
-    # -----------------------------
-    # Get booking ID
-    # -----------------------------
+   
     booking_detail_id = request.form.get(
         "booking_detail_id",
         type=int
@@ -180,30 +181,21 @@ def paystack_init():
         flash("Invalid booking.", "errormsg")
         return redirect(url_for("listing"))
 
-    # -----------------------------
-    # Retrieve booking
-    # -----------------------------
+    
     booking_detail = BookingDetail.query.get_or_404(
         booking_detail_id
     )
 
-    # -----------------------------
-    # Ensure booking belongs to user
-    # -----------------------------
-    if booking_detail.booking_userid != session.get("useronline"):
+    
+    if booking_detail.booking_userid and booking_detail.booking_userid != session.get("useronline"):
         flash("Unauthorized booking.", "errormsg")
         return redirect(url_for("listing"))
 
-    # -----------------------------
-    # Prevent duplicate payment
-    # -----------------------------
+   
     if booking_detail.booking_status == "paid":
         flash("This booking has already been paid.", "successmsg")
         return redirect(url_for("confirmation", booking_detail_id=booking_detail.booking_detail_id))
 
-    # -----------------------------
-    # Secret Key
-    # -----------------------------
     paystack_secret = current_app.config.get(
         "PAYSTACK_SECRET_KEY"
     )
@@ -217,9 +209,6 @@ def paystack_init():
             )
         )
 
-    # -----------------------------
-    # Calculate Amount
-    # -----------------------------
     nightly_price = Decimal(
         booking_detail.property.price_per_night or 0
     )
@@ -232,9 +221,6 @@ def paystack_init():
 
     amount = int(total * 100)
 
-    # -----------------------------
-    # Generate Reference
-    # -----------------------------
     reference = f"BK-{booking_detail.booking_detail_id}-{secrets.token_hex(8)}"
 
     callback_url = current_app.config.get("PAYSTACK_CALLBACK_URL") or url_for(
@@ -257,11 +243,6 @@ def paystack_init():
         "Content-Type": "application/json",
     }
 
-    print("=" * 60)
-    print("PAYSTACK INITIALIZE")
-    print(payload)
-    print("=" * 60)
-
     try:
 
         response = requests.post(
@@ -271,14 +252,9 @@ def paystack_init():
             timeout=20
         )
 
-        print("STATUS:", response.status_code)
-        print("BODY:", response.text)
-
         rsp = response.json()
 
     except requests.exceptions.RequestException as e:
-
-        print("REQUEST ERROR:", e)
 
         flash(
             "Unable to connect to Paystack.",
@@ -292,12 +268,7 @@ def paystack_init():
             )
         )
 
-    # -----------------------------
-    # Initialization failed
-    # -----------------------------
     if not rsp.get("status"):
-
-        print(rsp)
 
         flash(
             rsp.get(
@@ -313,15 +284,12 @@ def paystack_init():
                 booking_detail_id=booking_detail.booking_detail_id
             )
         )
-
-    # -----------------------------
-    # Save payment
-    # -----------------------------
+    logged_in_user = session.get("useronline")  # Returns None for guests
     payment = BookingPayment(
 
         booking_amount=total,
 
-        booking_userid=session["useronline"],
+        booking_userid=logged_in_user,
 
         booking_bookingid=booking_detail.booking_detail_id,
 
@@ -337,16 +305,10 @@ def paystack_init():
 
     db.session.commit()
 
-    # -----------------------------
-    # Save session
-    # -----------------------------
     session["payref"] = reference
 
     session["pay_booking_detail_id"] = booking_detail.booking_detail_id
 
-    # -----------------------------
-    # Redirect User
-    # -----------------------------
     authorization_url = rsp["data"]["authorization_url"]
 
     return redirect(authorization_url)
@@ -420,18 +382,19 @@ def paystack_landing():
 
         db.session.commit()
 
-        NotificationService.notify(
-           user_id=booking_detail.booking_userid,
-           title="Payment Successful",
-           message=(
-             f"Your payment for "
-             f"{booking_detail.property.prop_title} "
-             f"was successful. Your booking has been confirmed."
-            ),
-           notification_type=NotificationType.PAYMENT_SUCCESS,
-           link=f"/confirmation"
-)
-
+        if booking_detail.booking_userid:
+            NotificationService.notify(
+               user_id=booking_detail.booking_userid,
+               title="Payment Successful",
+               message=(
+                 f"Your payment for "
+                 f"{booking_detail.property.prop_title} "
+                 f"was successful. Your booking has been confirmed."
+                ),
+               notification_type=NotificationType.PAYMENT_SUCCESS,
+               reference_type="booking",
+               reference_id=booking_detail.booking_detail_id
+            )
         NotificationService.notify(
             user_id=booking_detail.property.prop_userid,
             title="New Paid Booking",
@@ -441,7 +404,8 @@ def paystack_landing():
                 f"{booking_detail.property.prop_title}."
             ),
             notification_type=NotificationType.HOST_NEW_BOOKING,
-            link="/host/bookings"
+            reference_type="booking",
+            reference_id=booking_detail.booking_detail_id
         )
 
         session["last_confirmed_booking_id"] = booking_detail.booking_detail_id
@@ -460,16 +424,18 @@ def paystack_landing():
         "errormsg"
     )
 
-    NotificationService.notify(
-    user_id=booking_detail.booking_userid,
-    title="Payment Failed",
-    message=data.get(
-        "gateway_response",
-        "Your payment could not be verified."
-    ),
-    notification_type=NotificationType.PAYMENT_FAILED,
-    link=f"/payment/{booking_detail.booking_detail_id}"
-    )
+    if booking_detail.booking_userid:
+        NotificationService.notify(
+        user_id=booking_detail.booking_userid,
+        title="Payment Failed",
+        message=data.get(
+            "gateway_response",
+            "Your payment could not be verified."
+        ),
+        notification_type=NotificationType.PAYMENT_FAILED,
+         reference_type="booking",
+         reference_id=booking_detail.booking_detail_id
+        )
 
     return redirect(
         url_for(

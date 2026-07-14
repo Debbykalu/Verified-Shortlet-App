@@ -523,7 +523,7 @@ class BookingPayment(db.Model):
         nullable=False, index=True, server_default="pending")
 
     booking_userid = db.Column(db.Integer, db.ForeignKey("users.user_id", ondelete="CASCADE"),
-        nullable=False, index=True )
+        nullable=True, index=True )
 
     booking_bookingid = db.Column(db.Integer, db.ForeignKey("booking_details.booking_detail_id", ondelete="CASCADE"),
         nullable=False, index=True )
@@ -569,19 +569,19 @@ class Notification(db.Model):
     )
 
     notification_reference_type = db.Column(
-    db.String(50),
-    nullable=True
-  )
+        db.String(50),
+        nullable=True
+    )
 
     notification_reference_id = db.Column(
-    db.Integer,
-    nullable=True
-  )
+        db.Integer,
+        nullable=True
+    )
 
     notification_read_at = db.Column(
-    db.DateTime,
-    nullable=True
-   )
+        db.DateTime,
+        nullable=True
+    )
 
     notification_timecreated = db.Column(
         db.DateTime,
@@ -593,19 +593,10 @@ class Notification(db.Model):
         default=datetime.utcnow,
         onupdate=datetime.utcnow
     )
-    notification_reference_type = db.Column(
-    db.String(50),
-    nullable=True
-    )
-
-    notification_reference_id = db.Column(
-    db.Integer,
-    nullable=True
-    )
     notification_is_read = db.Column(
-    db.Boolean,
-    default=False,
-    nullable=False
+        db.Boolean,
+        default=False,
+        nullable=False
     )
    
 

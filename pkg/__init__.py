@@ -19,8 +19,20 @@ def create_app():
     load_dotenv()
 
     app= Flask(__name__,instance_relative_config=True)
-    app.config.from_pyfile('config.py')
+    # Local instance settings are optional; production configuration is passed
+    # through environment variables and must not be baked into the image.
+    app.config.from_pyfile('config.py', silent=True)
     app.config.from_object(ProConfig)
+
+    from werkzeug.middleware.proxy_fix import ProxyFix
+    app.wsgi_app = ProxyFix(
+        app.wsgi_app,
+        x_for=1,
+        x_proto=1,
+        x_host=1,
+        x_port=1,
+        x_prefix=1
+    )
     
     app.register_blueprint(notification_bp)
     app.register_blueprint(notification_api)
@@ -29,6 +41,11 @@ def create_app():
     db.init_app(app)
     migrate  = Migrate(app,db)
     csrf.init_app(app)
+
+    @app.get("/healthz")
+    def healthz():
+        """Liveness endpoint for Docker and reverse-proxy health checks."""
+        return {"status": "ok"}, 200
 
     
 

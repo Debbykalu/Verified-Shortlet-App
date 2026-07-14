@@ -15,6 +15,8 @@ class NotificationService:
         reference_type=None,
         reference_id=None
     ):
+     if not user_id:
+         return None
 
      return NotificationService.create_notification(
 
@@ -272,9 +274,10 @@ class NotificationService:
 
         notification_type=NotificationType.HOST_VERIFICATION_FAILED,
 
-        link="/host/verification"
+        reference_type="verification",
 
-    )
+        reference_id=None
+      )
     @staticmethod
     def property_approved(property):
 
@@ -288,9 +291,10 @@ class NotificationService:
 
             notification_type=NotificationType.PROPERTY_APPROVED,
 
-            link=f"/property/{property.prop_id}"
+            reference_type="property",
 
-    )
+            reference_id=property.prop_id
+        )
     @staticmethod
     def property_rejected(property, reason=None):
 
@@ -309,7 +313,9 @@ class NotificationService:
 
             notification_type=NotificationType.PROPERTY_REJECTED,
 
-            link=f"/property/{property.prop_id}"
+            reference_type="property",
+
+            reference_id=property.prop_id
         )
     @staticmethod
     def booking_cancelled(booking):
@@ -324,7 +330,9 @@ class NotificationService:
 
              notification_type=NotificationType.BOOKING_CANCELLED,
 
-            link=f"/booking/{booking.booking_detail_id}"
+             reference_type="booking",
+
+             reference_id=booking.booking_detail_id
         )
     @staticmethod
     def booking_completed(booking):
@@ -339,7 +347,9 @@ class NotificationService:
 
                 notification_type=NotificationType.BOOKING_COMPLETED,
 
-                link=f"/booking/{booking.booking_detail_id}"
+                reference_type="booking",
+
+                reference_id=booking.booking_detail_id
             )
     @staticmethod
     def review_received(review):
@@ -354,5 +364,7 @@ class NotificationService:
 
             notification_type=NotificationType.REVIEW_RECEIVED,
 
-            link=f"/property/{review.property.prop_id}"
+          reference_type="property",
+
+          reference_id=review.property.prop_id
         )
