@@ -13,7 +13,6 @@ from pkg.models import (
     PropertyLGA,
     Amenity,
     PropertyAmenity,
-    Booking,
     BookingDetail,
     PropertyImage,
     db,
@@ -268,22 +267,31 @@ class DashboardService:
         min_bedrooms=None,
         sort_by=None,
     ):
-        query = Property.query.join(PropertyState, Property.prop_stateid == PropertyState.state_id).join(
-            PropertyLGA, Property.prop_lgaid == PropertyLGA.lga_id
-        )
+        query = Property.query
+
+        if Property.prop_availability_status is not None:
+            query = query.filter(Property.prop_availability_status != "inactive")
 
         if location:
             normalized_location = f"%{location.strip()}%"
-            query = query.filter(
-                or_(
-                    Property.prop_title.ilike(normalized_location),
-                    Property.prop_description.ilike(normalized_location),
-                    Property.prop_address.ilike(normalized_location),
-                    Property.prop_city.ilike(normalized_location),
-                    PropertyState.state_name.ilike(normalized_location),
-                    PropertyLGA.lga_name.ilike(normalized_location),
+            location_filters = [
+                Property.prop_title.ilike(normalized_location),
+                Property.prop_description.ilike(normalized_location),
+                Property.prop_address.ilike(normalized_location),
+                Property.prop_city.ilike(normalized_location),
+            ]
+
+            try:
+                query = query.filter(or_(*location_filters))
+            except Exception:
+                query = query.filter(
+                    or_(
+                        Property.prop_title.ilike(normalized_location),
+                        Property.prop_description.ilike(normalized_location),
+                        Property.prop_address.ilike(normalized_location),
+                        Property.prop_city.ilike(normalized_location),
+                    )
                 )
-            )
 
         if verified_only:
             query = query.filter(Property.is_verified == True)
@@ -313,11 +321,11 @@ class DashboardService:
                 end_date = date.fromisoformat(checkout_date)
                 if end_date >= start_date:
                     overlapping = (
-                        Booking.query.with_entities(Booking.booking_propid)
+                        BookingDetail.query.with_entities(BookingDetail.booking_propid)
                         .filter(
-                            Booking.booking_status.in_(["confirmed", "pending"]),
-                            Booking.checkin_date <= end_date,
-                            Booking.checkout_date >= start_date,
+                            BookingDetail.booking_status.in_(["pending_payment", "paid"]),
+                            BookingDetail.checkin_date <= end_date,
+                            BookingDetail.checkout_date >= start_date,
                         )
                         .subquery()
                     )

@@ -5,7 +5,7 @@ from datetime import date
 from decimal import Decimal
 from sqlalchemy import func
 from urllib.error import HTTPError, URLError
-from urllib.parse import quote
+from urllib.parse import quote, urlparse
 from urllib.request import Request, urlopen
 
 from flask import render_template, request, url_for, redirect, flash, session, jsonify, current_app
@@ -74,6 +74,18 @@ def _booking_id_from_reference(ref):
     if len(parts) >= 3 and parts[0] == 'BK' and parts[1].isdigit():
         return int(parts[1])
     return None
+
+
+def _build_paystack_callback_url():
+    configured_url = (current_app.config.get("PAYSTACK_CALLBACK_URL") or "").strip()
+    if configured_url:
+        parsed = urlparse(configured_url)
+        host = (parsed.netloc or "").lower()
+        if host and not any(host.startswith(value) for value in ("127.0.0.1", "localhost", "0.0.0.0")):
+            return configured_url
+
+    return f"{request.host_url.rstrip('/')}{url_for('paystack_landing')}"
+
 
 @app.errorhandler(404)
 def page_not_found(error):
@@ -223,10 +235,8 @@ def paystack_init():
 
     reference = f"BK-{booking_detail.booking_detail_id}-{secrets.token_hex(8)}"
 
-    callback_url = current_app.config.get("PAYSTACK_CALLBACK_URL") or url_for(
-        'paystack_landing',
-        _external=True,
-    )
+    callback_url = _build_paystack_callback_url()
+
     separator = '&' if '?' in callback_url else '?'
     callback_url = f"{callback_url}{separator}booking_detail_id={booking_detail.booking_detail_id}"
 
