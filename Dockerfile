@@ -19,4 +19,6 @@ COPY . .
 
 RUN chmod +x deployment/scripts/docker-entrypoint.sh
 
+EXPOSE 8000
+
 ENTRYPOINT ["deployment/scripts/docker-entrypoint.sh"]

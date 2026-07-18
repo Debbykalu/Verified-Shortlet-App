@@ -1,41 +1,30 @@
-# Git
-.git
-.gitignore
-
-# Python
 __pycache__/
-*.py[cod]
+*.pyc
 *.pyo
 *.pyd
 
-# Virtual environments
+.git
+.gitignore
+
+.vscode/
+.idea/
+
 venv/
 .venv/
 vshortlets/
 
-# IDE
-.vscode/
-.idea/
+instance/
 
-# OS
-.DS_Store
-Thumbs.db
-
-# Tests
-.pytest_cache/
-.mypy_cache/
-
-# Environment
 .env
 .env.*
-!.env.example
 
-# Database
-*.db
+migrations/__pycache__/
+
+tests/
+
+README.md
+
+*.sqlite
 *.sqlite3
 
-# Logs
-*.log
-
-# Local uploads
-instance/
+.DS_Store
