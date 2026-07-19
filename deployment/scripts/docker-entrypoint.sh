@@ -3,7 +3,9 @@ set -e
 
 echo "Running database migrations..."
 
-flask db upgrade || exit 1
+export FLASK_APP=starter.py
+
+flask db upgrade
 
 echo "Starting Gunicorn..."
 
