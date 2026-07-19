@@ -11,10 +11,13 @@ class GeneralConfig(object):
 
 class ProConfig(GeneralConfig):
     ADMIN_EMAIL="live@admin.com"
-    SQLALCHEMY_DATABASE_URI = os.getenv(
-    "SQLALCHEMY_DATABASE_URI",
-    "mysql+mysqlconnector://root@localhost/shortletdb"
-)
+    _db_uri = os.getenv(
+        "SQLALCHEMY_DATABASE_URI",
+        "mysql+mysqlconnector://root@localhost/shortletdb"
+    )
+    if _db_uri and _db_uri.startswith("mysql://"):
+        _db_uri = _db_uri.replace("mysql://", "mysql+mysqlconnector://", 1)
+    SQLALCHEMY_DATABASE_URI = _db_uri
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', '').strip()
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', GeneralConfig.SECRET_KEY).strip()
