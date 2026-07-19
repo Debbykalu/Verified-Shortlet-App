@@ -10,9 +10,11 @@ class GeneralConfig(object):
 
 
 class ProConfig(GeneralConfig):
-    SECRET_key="live_trMNfGHpxif25uzIYwU"
     ADMIN_EMAIL="live@admin.com"
-    SQLALCHEMY_DATABASE_URI='mysql+mysqlconnector://root@localhost/shortletdb'
+    SQLALCHEMY_DATABASE_URI = os.getenv(
+    "SQLALCHEMY_DATABASE_URI",
+    "mysql+mysqlconnector://root@localhost/shortletdb"
+)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', '').strip()
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', GeneralConfig.SECRET_KEY).strip()
