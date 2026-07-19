@@ -1,9 +1,25 @@
 #!/bin/sh
 set -e
 
-echo "Running database migrations..."
+echo "=================================="
+echo "Verified Shortlet Starting"
+echo "=================================="
+
+echo "Current directory:"
+pwd
+
+echo "Project files:"
+ls -la
+
+echo "Testing Flask import..."
+
+python -c "from starter import app; print(app)"
+
+echo "FLASK_APP=starter.py"
 
 export FLASK_APP=starter.py
+
+echo "Running migrations..."
 
 flask db upgrade
 
