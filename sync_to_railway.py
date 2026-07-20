@@ -98,6 +98,13 @@ def sync_database():
             print(f"Warning: Could not alter table (might not exist yet or already altered): {alter_err}")
 
         for table in tables:
+            if table == 'alembic_version':
+                print("Setting alembic_version on Railway to 'fec59ce4513c'...", end="", flush=True)
+                dest_cursor.execute("TRUNCATE TABLE `alembic_version`")
+                dest_cursor.execute("INSERT INTO `alembic_version` (`version_num`) VALUES ('fec59ce4513c')")
+                print(" (Set to codebase HEAD)")
+                continue
+
             print(f"Synchronizing table: {table} ...", end="", flush=True)
             
             # Fetch data from source

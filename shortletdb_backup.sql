@@ -11,11 +11,11 @@ INSERT INTO `admins` (`admin_id`, `admin_email`, `admin_password`) VALUES (2, 'a
 
 -- Dumping data for table alembic_version
 TRUNCATE TABLE `alembic_version`;
-INSERT INTO `alembic_version` (`version_num`) VALUES ('513430652b4f');
+INSERT INTO `alembic_version` (`version_num`) VALUES ('fec59ce4513c');
 
 -- Dumping data for table amenities
 TRUNCATE TABLE `amenities`;
-INSERT INTO `amenities` (`amenity_id`, `amenity_name`) VALUES (1, 'swmming pool');
+INSERT INTO `amenities` (`amenity_id`, `amenity_name`) VALUES (1, 'Swimming Pool');
 INSERT INTO `amenities` (`amenity_id`, `amenity_name`) VALUES (2, 'Air Conditioning');
 INSERT INTO `amenities` (`amenity_id`, `amenity_name`) VALUES (3, 'Smart TV');
 INSERT INTO `amenities` (`amenity_id`, `amenity_name`) VALUES (4, 'Free WiFi');

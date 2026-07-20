@@ -15,6 +15,7 @@ from pkg.models import (
     PropertyAmenity,
     BookingDetail,
     PropertyImage,
+    BookingPayment,
     db,
 )
 
@@ -80,11 +81,19 @@ class DashboardService:
             booking_status="paid",
         ).count()
 
+        payments = (
+            BookingPayment.query.options(joinedload(BookingPayment.booking_detail).joinedload(BookingDetail.property))
+            .filter_by(booking_userid=user_id)
+            .order_by(BookingPayment.booking_payment_date.desc())
+            .all()
+        )
+
         return {
             "deets": user,
             "bookings": bookings,
             "bookings_pagination": bookings_pagination,
             "saved_properties": saved_properties,
+            "payments": payments,
             "stats": {
                 "total_bookings": total_bookings,
                 "active_reservations": active_reservations,

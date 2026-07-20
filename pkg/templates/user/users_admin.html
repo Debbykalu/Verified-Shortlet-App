@@ -53,14 +53,14 @@
                     </li>
                 
                     <li>
-                        <a href="#" class="tab-link" data-tab="profile">
+                        <a href="{{ url_for('profile') }}" class="tab-link-direct">
                             <i class="fa-solid fa-user"></i>
                             Profile
                         </a>
                     </li>
                 
                     <li>
-                        <a href="#" class="tab-link" data-tab="logout">
+                        <a href="{{ url_for('logout') }}" class="tab-link-direct text-danger">
                             <i class="fa-solid fa-right-from-bracket"></i>
                             Logout
                         </a>
@@ -386,11 +386,11 @@
                                         Recent Payments
                                     </h3>
                                     <p class="text-muted mb-0">
-                                        Your Last Transaction
+                                        Your Transaction History
                                     </p>
                                 </div>
                             
-                                <button class="btn btn-outline-primary px-5">
+                                <button id="exportCsvBtn" class="btn btn-outline-primary px-5">
                                     Export
                                 </button>
                             </div>
@@ -406,80 +406,28 @@
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        {% for payment in payments %}
                                         <tr>
-                                            <td>#BK1024</td>
-                                            <td>Luxury Apartment</td>
-                                            <td>12 May 2025</td>
+                                            <td>#BK{{ payment.booking_detail.booking_detail_id if payment.booking_detail else payment.booking_bookingid }}</td>
+                                            <td>{{ payment.booking_detail.property.prop_title if (payment.booking_detail and payment.booking_detail.property) else 'Property Booking' }}</td>
+                                            <td>{{ payment.booking_payment_date.strftime('%d %b %Y %H:%M') if payment.booking_payment_date else 'N/A' }}</td>
                                             <td>
-                                                <span class="badge bg-success">
-                                                    Paid
+                                                <span class="badge {{ 'bg-success' if payment.booking_payment_status == 'paid' else 'bg-warning text-dark' if payment.booking_payment_status == 'pending' else 'bg-danger' }}">
+                                                    {{ payment.booking_payment_status|title }}
                                                 </span>
                                             </td>
-                                            <td>₦135,000</td>
+                                            <td>₦{{ "{:,.2f}".format(payment.booking_amount or 0) }}</td>
                                         </tr>
+                                        {% endfor %}
+                                        {% if payments|length == 0 %}
                                         <tr>
-                                            <td>#BK1025</td>
-                                            <td>Modern Studio</td>
-                                            <td>22 June 2025</td>
-                                            <td>
-                                                <span class="badge bg-warning text-dark">
-                                                    Pending
-                                                </span>
+                                            <td colspan="5" class="text-center py-4 text-muted">
+                                                No payment history found.
                                             </td>
-                                            <td>₦105,000</td>
                                         </tr>
-                                        <tr>
-                                            <td>#BK1026</td>
-                                            <td>Luxury Apartment</td>
-                                            <td>12 May 2025</td>
-                                            <td>
-                                                <span class="badge bg-success">
-                                                    Paid
-                                                </span>
-                                            </td>
-                                            <td>₦135,000</td>
-                                        </tr>
-                                        <tr>
-                                            <td>#BK1027</td>
-                                            <td>Beach Apartment</td>
-                                            <td>12 May 2025</td>
-                                            <td>
-                                                <span class="badge bg-warning text-dark">
-                                                    Pending
-                                                </span>
-                                            </td>
-                                            <td>₦235,000</td>
-                                        </tr>
-                                        <tr>
-                                            <td>#BK1028</td>
-                                            <td>Beach Apartment</td>
-                                            <td>12 May 2025</td>
-                                            <td>
-                                                <span class="badge bg-danger">
-                                                    Cancelled
-                                                </span>
-                                            </td>
-                                            <td>₦235,000</td>
-                                        </tr>
+                                        {% endif %}
                                     </tbody>
                                 </table>
-                                <nav aria-label="Page navigation example">
-                                    <ul class="pagination d-flex justify-content-center align-items-center">
-                                      <li class="page-item">
-                                        <a class="page-link" href="#" aria-label="Previous">
-                                          <span aria-hidden="true">&laquo;</span>
-                                        </a>
-                                      </li>
-                                      <li class="page-item"><a class="page-link active text-light" href="#">1</a></li>
-                                      <li class="page-item"><a class="page-link" href="#">2</a></li>
-                                      <li class="page-item"><a class="page-link" href="#">3</a></li>
-                                      <li class="page-item">
-                                        <a class="page-link" href="#" aria-label="Next">
-                                          <span aria-hidden="true">&raquo;</span>
-                                        </a>
-                                      </li>
-                                    </ul>
-                                  </nav>
                             </div>
                     </div>
                     <div id="messages" class="tab-pane">
@@ -514,8 +462,46 @@
                 $("#" + target).addClass("active");
         
             });
+
+            $("#exportCsvBtn").click(function(e) {
+                e.preventDefault();
+                exportPaymentsToCSV();
+            });
         
         });
+
+        function exportPaymentsToCSV() {
+            let csv = [];
+            let headers = [];
+            $("#payments table thead tr td").each(function() {
+                headers.push($(this).text().trim());
+            });
+            csv.push(headers.join(","));
+
+            $("#payments table tbody tr").each(function() {
+                let row = [];
+                $(this).find("td").each(function() {
+                    let text = $(this).text().trim();
+                    text = text.replace(/"/g, '""');
+                    if (text.includes(",") || text.includes("\n") || text.includes('"')) {
+                        text = '"' + text + '"';
+                    }
+                    row.push(text);
+                });
+                if (row.length > 0 && row[0] !== "No payment history found.") {
+                    csv.push(row.join(","));
+                }
+            });
+
+            let csvContent = "data:text/csv;charset=utf-8,\uFEFF" + csv.join("\n");
+            let encodedUri = encodeURI(csvContent);
+            let link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "payment_history.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
         function refreshNotificationCount(){
 
     $.get("/notifications/unread-count", function(response){

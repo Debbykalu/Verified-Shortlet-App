@@ -99,28 +99,32 @@
           <small class="fs-6 text-muted">/night</small>
         </h3>
 
+      <form action="{{ url_for('booking') }}" method="GET">
+        <input type="hidden" name="prop_id" value="{{ property.prop_id }}">
+
         <div class="mb-3">
           <label class="form-label">Check In</label>
-          <input type="date" class="form-control" value="{{ search_values.checkin_date if search_values else '' }}">
+          <input type="date" name="checkin_date" class="form-control" value="{{ search_values.checkin_date if search_values else '' }}" required>
         </div>
 
         <div class="mb-3">
           <label class="form-label">Check Out</label>
-          <input type="date" class="form-control" value="{{ search_values.checkout_date if search_values else '' }}">
+          <input type="date" name="checkout_date" class="form-control" value="{{ search_values.checkout_date if search_values else '' }}" required>
         </div>
 
         <div class="mb-3">
           <label class="form-label">Guests</label>
-          <select class="form-select">
+          <select name="guests" class="form-select">
             {% for guest in range(1, (property.max_guest or 1) + 1) %}
             <option value="{{ guest }}" {% if search_values and search_values.guests == guest|string %}selected{% endif %}>{{ guest }} Guest{{ '' if guest == 1 else 's' }}</option>
             {% endfor %}
           </select>
         </div>
 
-        <a href="{{ url_for('booking', prop_id=property.prop_id, checkin_date=(search_values.checkin_date if search_values else ''), checkout_date=(search_values.checkout_date if search_values else ''), guests=(search_values.guests if search_values else '')) }}" class="searchbtn w-100 btn-lg">
+        <button type="submit" class="searchbtn w-100 btn-lg border-0 d-block text-center text-white" style="text-decoration: none;">
           Reserve Now
-        </a>
+        </button>
+      </form>
 
         <hr>
 
