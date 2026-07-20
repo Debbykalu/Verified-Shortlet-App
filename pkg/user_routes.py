@@ -143,6 +143,9 @@ def payment():
         flash('You are not authorized to pay for this booking.', category='errormsg')
         return redirect(url_for('listing'))
 
+    if booking_detail.booking_status == 'paid':
+        return redirect(url_for('confirmation', booking_detail_id=booking_detail.booking_detail_id))
+
     nightly_price = Decimal(booking_detail.property.price_per_night or 0)
     nights = booking_detail.nights or 1
     subtotal = nightly_price * nights
