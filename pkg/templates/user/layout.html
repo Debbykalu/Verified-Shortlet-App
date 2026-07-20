@@ -16,6 +16,52 @@
     <title>Verified Short-let Apartments</title>
 </head>
 <body>
+    <!-- Global Preloader -->
+    <div id="preloader">
+        <div class="loader-content">
+            <div class="premium-spinner"></div>
+            <div class="loader-text">DebKits Short-let</div>
+        </div>
+    </div>
+    <script>
+        // Hide preloader when page finishes loading
+        window.addEventListener('load', function() {
+            var preloader = document.getElementById('preloader');
+            if (preloader) {
+                preloader.classList.add('preloader-hidden');
+            }
+        });
+
+        // Show preloader when navigating away
+        document.addEventListener('DOMContentLoaded', function() {
+            // Find all anchor links that don't trigger in-page behaviors
+            var links = document.querySelectorAll('a:not([href^="#"]):not([target="_blank"]):not([data-bs-toggle]):not([data-tab])');
+            links.forEach(function(link) {
+                link.addEventListener('click', function(e) {
+                    if (e.button === 0 && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey) {
+                        var href = this.getAttribute('href');
+                        if (href && href !== '#' && !href.startsWith('javascript:')) {
+                            var preloader = document.getElementById('preloader');
+                            if (preloader) {
+                                preloader.classList.remove('preloader-hidden');
+                            }
+                        }
+                    }
+                });
+            });
+
+            // Show preloader on form submission
+            var forms = document.querySelectorAll('form:not([target="_blank"])');
+            forms.forEach(function(form) {
+                form.addEventListener('submit', function() {
+                    var preloader = document.getElementById('preloader');
+                    if (preloader) {
+                        preloader.classList.remove('preloader-hidden');
+                    }
+                });
+            });
+        });
+    </script>
     <div class="container-fluid">
         <div class="row">
              <nav class="navbar navbar-expand-lg navbar-light fixed-top">
