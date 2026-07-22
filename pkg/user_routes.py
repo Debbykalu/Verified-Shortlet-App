@@ -482,7 +482,10 @@ def listing():
         'sort_by': request.args.get('sort_by', '').strip() or 'recommended',
     }
 
-    properties = dashboard_service.search_properties(
+    page = request.args.get('page', 1, type=int)
+    per_page = 4
+
+    pagination = dashboard_service.search_properties(
         location=search_values['location'],
         checkin_date=search_values['checkin_date'],
         checkout_date=search_values['checkout_date'],
@@ -491,15 +494,19 @@ def listing():
         property_type=search_values['property_type'],
         min_bedrooms=search_values['min_bedrooms'],
         sort_by=search_values['sort_by'],
+        page=page,
+        per_page=per_page,
     )
 
+    properties = pagination.items
     search_meta = dashboard_service.get_search_metadata()
     return render_template(
         'user/listing.html',
         properties=properties,
+        pagination=pagination,
         search_meta=search_meta,
         search_values=search_values,
-        total_results=len(properties),
+        total_results=pagination.total,
     )
 
 @app.route('/api/search-properties/')

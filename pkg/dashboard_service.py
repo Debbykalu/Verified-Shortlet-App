@@ -275,6 +275,8 @@ class DashboardService:
         property_type=None,
         min_bedrooms=None,
         sort_by=None,
+        page=None,
+        per_page=None,
     ):
         query = Property.query
 
@@ -351,6 +353,8 @@ class DashboardService:
         else:
             query = query.order_by(Property.is_verified.desc(), Property.prop_id.desc())
 
+        if page is not None and per_page is not None:
+            return query.paginate(page=page, per_page=per_page, error_out=False)
         return query.all()
 
     def save_host_property(
