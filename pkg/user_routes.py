@@ -13,7 +13,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from pkg import app
 from pkg.dashboard_service import DashboardService
 from pkg.forms import RegisterForm, LoginForm, BookingDetailsForm
-from pkg.models import User, Property, Amenity, BookingDetail, BookingPayment, db
+from pkg.models import User, Property, Amenity, BookingDetail, BookingPayment, Review, db
 from pkg.notification_service import NotificationService
 from pkg.utils.notification_constants import NotificationType
 from pkg.utils.upload import save_nin_document
@@ -139,6 +139,10 @@ def payment():
         flash('Booking details not found.', category='errormsg')
         return redirect(url_for('listing'))
 
+    if not booking_detail.checkin_date or not booking_detail.checkout_date:
+        flash('Check-in and Check-out dates must be selected to make payment.', category='errormsg')
+        return redirect(url_for('listing'))
+
     if booking_detail.booking_userid and session.get('useronline') != booking_detail.booking_userid:
         flash('You are not authorized to pay for this booking.', category='errormsg')
         return redirect(url_for('listing'))
@@ -164,6 +168,10 @@ def payment():
 @app.route('/pay/<int:booking_detail_id>/', methods=['GET', 'POST'])
 def pay_booking(booking_detail_id):
     booking_detail = BookingDetail.query.get_or_404(booking_detail_id)
+    if not booking_detail.checkin_date or not booking_detail.checkout_date:
+        flash('Check-in and Check-out dates must be selected to make payment.', category='errormsg')
+        return redirect(url_for('listing'))
+
     if booking_detail.booking_userid and booking_detail.booking_userid != session.get('useronline'):
         if session.get('useronline') is None:
             flash('Please log in to pay for this booking.', category='errormsg')
@@ -200,6 +208,10 @@ def paystack_init():
     booking_detail = BookingDetail.query.get_or_404(
         booking_detail_id
     )
+
+    if not booking_detail.checkin_date or not booking_detail.checkout_date:
+        flash("Check-in and Check-out dates must be selected to make payment.", "errormsg")
+        return redirect(url_for("listing"))
 
     
     if booking_detail.booking_userid and booking_detail.booking_userid != session.get("useronline"):
@@ -467,7 +479,7 @@ def listing():
         'verified_only': request.args.get('verified_only') in ('on', 'true', '1'),
         'property_type': request.args.get('property_type', ''),
         'min_bedrooms': request.args.get('min_bedrooms', ''),
-        'sort_by': request.args.get('sort_by', ''),
+        'sort_by': request.args.get('sort_by', '').strip() or 'recommended',
     }
 
     properties = dashboard_service.search_properties(
@@ -500,7 +512,7 @@ def api_search_properties():
         'verified_only': request.args.get('verified_only') in ('on', 'true', '1'),
         'property_type': request.args.get('property_type', ''),
         'min_bedrooms': request.args.get('min_bedrooms', ''),
-        'sort_by': request.args.get('sort_by', ''),
+        'sort_by': request.args.get('sort_by', '').strip() or 'recommended',
     }
 
     properties = dashboard_service.search_properties(
@@ -557,6 +569,48 @@ def property_details(prop_id):
         service_fee=service_fee,
         total_amount=total_amount,
     )
+
+
+@app.route('/properties/<int:prop_id>/review', methods=['POST'])
+def add_property_review(prop_id):
+    property_item = Property.query.get(prop_id)
+    if not property_item:
+        flash('Property not found.', category='errormsg')
+        return redirect(url_for('listing'))
+
+    rating = request.form.get('rating', type=int)
+    comment = request.form.get('comment', '').strip()
+
+    if not rating or rating < 1 or rating > 5:
+        flash('Please select a rating between 1 and 5 stars.', category='errormsg')
+        return redirect(url_for('property_details', prop_id=prop_id))
+
+    if not comment:
+        flash('Please enter a comment for your review.', category='errormsg')
+        return redirect(url_for('property_details', prop_id=prop_id))
+
+    user_id = session.get('useronline')
+
+    review = Review(
+        review_propid=prop_id,
+        review_rating=rating,
+        review_comment=comment
+    )
+
+    if user_id:
+        review.review_userid = user_id
+    else:
+        # It's a guest review
+        guest_name = request.form.get('guest_name', '').strip()
+        guest_email = request.form.get('guest_email', '').strip()
+        review.guest_name = guest_name if guest_name else 'Guest'
+        review.guest_email = guest_email if guest_email else None
+
+    db.session.add(review)
+    db.session.commit()
+
+    flash('Thank you! Your review has been submitted successfully.', category='successmsg')
+    return redirect(url_for('property_details', prop_id=prop_id))
 
 
 @app.route('/properties_details')

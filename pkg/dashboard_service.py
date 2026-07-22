@@ -346,8 +346,10 @@ class DashboardService:
             query = query.order_by(Property.price_per_night.asc())
         elif sort_by == "highest":
             query = query.order_by(Property.price_per_night.desc())
+        elif sort_by == "recommended":
+            query = query.order_by(Property.is_verified.desc(), Property.prop_id.desc())
         else:
-            query = query.order_by(Property.prop_id.desc())
+            query = query.order_by(Property.is_verified.desc(), Property.prop_id.desc())
 
         return query.all()
 

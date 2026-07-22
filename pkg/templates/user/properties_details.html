@@ -5,6 +5,31 @@
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
       <div>
         <h2 class="fw-bold">{{ property.prop_title }}</h2>
+        <div class="d-flex align-items-center gap-2 mb-2">
+          {% if property.reviews_count > 0 %}
+            <div class="text-warning small d-flex align-items-center gap-1">
+              {% for i in range(1, 6) %}
+                {% if property.average_rating >= i %}
+                  <i class="bi bi-star-fill"></i>
+                {% elif property.average_rating >= i - 0.5 %}
+                  <i class="bi bi-star-half"></i>
+                {% else %}
+                  <i class="bi bi-star"></i>
+                {% endif %}
+              {% endfor %}
+            </div>
+            <span class="fw-bold text-dark">{{ property.average_rating }}</span>
+            <a href="#reviews-section" class="text-muted small text-decoration-underline" id="reviews-header-link">reviews({{ property.reviews_count }})</a>
+          {% else %}
+            <div class="text-warning small d-flex align-items-center gap-1">
+              {% for i in range(5) %}
+                <i class="bi bi-star"></i>
+              {% endfor %}
+            </div>
+            <span class="text-muted small">No reviews yet</span>
+            <a href="#reviews-section" class="text-muted small text-decoration-underline ms-1" id="reviews-header-link">reviews(0)</a>
+          {% endif %}
+        </div>
         <p class="text-muted mb-0">
           {{ property.prop_city or property.prop_address or property.prop_category }},
           {{ property.state.state_name if property.state else '' }}
@@ -90,6 +115,166 @@
         </div>
         <p class="text-muted mb-0">Contact: {{ property.user.user_phoneno }}</p>
       </div>
+
+      <style>
+        .cursor-pointer {
+          cursor: pointer;
+        }
+        .star-select:hover,
+        .star-select.active {
+          color: #ffc107 !important;
+        }
+        .rating-input i {
+          transition: color 0.15s ease-in-out;
+        }
+        .avatar-placeholder {
+          font-size: 0.9rem;
+          letter-spacing: 0.05em;
+        }
+      </style>
+
+      <!-- Reviews Section -->
+      <div id="reviews-section" class="bg-white p-4 rounded-4 shadow-sm mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h4 class="mb-0">
+            Reviews
+            <span class="text-muted fs-6">({{ property.reviews_count }})</span>
+          </h4>
+          {% if property.reviews_count > 0 %}
+          <div class="d-flex align-items-center gap-2">
+            <span class="fw-bold fs-5 text-dark mb-0">{{ property.average_rating }}</span>
+            <div class="text-warning small d-flex align-items-center gap-1">
+              {% for i in range(1, 6) %}
+                {% if property.average_rating >= i %}
+                  <i class="bi bi-star-fill"></i>
+                {% elif property.average_rating >= i - 0.5 %}
+                  <i class="bi bi-star-half"></i>
+                {% else %}
+                  <i class="bi bi-star"></i>
+                {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Flash messages for reviews -->
+        {% with messages = get_flashed_messages(category_filter=['successmsg', 'errormsg']) %}
+          {% if messages %}
+            {% for msg in messages %}
+              <div class="alert alert-{% if 'success' in msg.lower() or 'thank' in msg.lower() %}success{% else %}danger{% endif %} alert-dismissible fade show" role="alert">
+                {{ msg }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        {% if property.reviews %}
+          <div class="review-list">
+            {% for review in property.reviews|sort(attribute='review_time', reverse=True) %}
+              <div class="review-item border-bottom py-3 {% if loop.last %}border-bottom-0{% endif %}">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="avatar-placeholder bg-light text-secondary rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 40px; height: 40px; border: 1px solid #dee2e6;">
+                      {% if review.user %}
+                        {{ review.user.user_firstname[0]|upper }}{{ review.user.user_lastname[0]|upper }}
+                      {% else %}
+                        {{ (review.guest_name or 'G')[0]|upper }}
+                      {% endif %}
+                    </div>
+                    <div>
+                      <h6 class="mb-0 fw-semibold text-dark">
+                        {% if review.user %}
+                          {{ review.user.user_firstname }} {{ review.user.user_lastname }}
+                        {% else %}
+                          {{ review.guest_name }} <span class="badge bg-light text-muted border font-monospace" style="font-size: 0.7rem;">Guest</span>
+                        {% endif %}
+                      </h6>
+                      <small class="text-muted" style="font-size: 0.8rem;">
+                        {{ time_ago(review.review_time) if time_ago else review.review_time.strftime('%b %d, %Y') }}
+                      </small>
+                    </div>
+                  </div>
+                  <div class="text-warning small d-flex align-items-center gap-1">
+                    {% for star in range(1, 6) %}
+                      {% if review.review_rating >= star %}
+                        <i class="bi bi-star-fill"></i>
+                      {% else %}
+                        <i class="bi bi-star"></i>
+                      {% endif %}
+                    {% endfor %}
+                  </div>
+                </div>
+                <p class="text-muted mb-0 ps-1" style="font-size: 0.95rem; line-height: 1.5;">
+                  {{ review.review_comment }}
+                </p>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-center py-4 text-muted">
+            <i class="bi bi-chat-left-text fs-2 mb-2 d-block text-secondary"></i>
+            <p class="mb-0">No reviews yet. Be the first to review this property!</p>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Add Review Form Section -->
+      <div class="bg-white p-4 rounded-4 shadow-sm mb-4">
+        <h4 class="mb-3">Write a Review</h4>
+        <form action="{{ url_for('add_property_review', prop_id=property.prop_id) }}" method="POST" id="reviewForm" class="needs-validation" novalidate>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+          {% if session.get('useronline') == None %}
+            <div class="alert alert-info border-0 shadow-sm rounded-3 py-2 px-3 mb-3 d-flex align-items-center gap-2" style="font-size: 0.9rem;">
+              <i class="bi bi-info-circle-fill fs-5"></i>
+              <span>You are posting as a <strong>Guest</strong>. Alternatively, you can <a href="{{ url_for('login') }}" class="alert-link text-decoration-underline">login</a> to post under your account.</span>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold text-muted">Your Name</label>
+                <input type="text" name="guest_name" class="form-control rounded-3" placeholder="e.g. John Doe" required>
+                <div class="invalid-feedback">Please enter your name.</div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold text-muted">Your Email (Optional)</label>
+                <input type="email" name="guest_email" class="form-control rounded-3" placeholder="e.g. john@example.com">
+                <div class="invalid-feedback">Please enter a valid email.</div>
+              </div>
+            </div>
+          {% else %}
+            <div class="d-flex align-items-center gap-2 mb-3 bg-light p-2 rounded-3" style="width: fit-content;">
+              <i class="bi bi-person-check-fill text-success"></i>
+              <span class="small text-muted">Posting as <strong>{{ session.get('username') or 'Logged-in User' }}</strong></span>
+            </div>
+          {% endif %}
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold text-muted d-block mb-2">Rating</label>
+            <div class="rating-input d-flex align-items-center gap-1 fs-3">
+              <input type="hidden" name="rating" id="ratingValue" value="" required>
+              <i class="bi bi-star text-muted star-select cursor-pointer" data-value="1"></i>
+              <i class="bi bi-star text-muted star-select cursor-pointer" data-value="2"></i>
+              <i class="bi bi-star text-muted star-select cursor-pointer" data-value="3"></i>
+              <i class="bi bi-star text-muted star-select cursor-pointer" data-value="4"></i>
+              <i class="bi bi-star text-muted star-select cursor-pointer" data-value="5"></i>
+            </div>
+            <div class="invalid-feedback d-none" id="ratingFeedback">Please select a rating of 1 to 5 stars.</div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold text-muted">Your Comment</label>
+            <textarea name="comment" class="form-control rounded-3" rows="4" placeholder="Share details of your experience at this property..." required></textarea>
+            <div class="invalid-feedback">Please enter your review comments.</div>
+          </div>
+
+          <button type="submit" class="custom-btn custom-btn-primary border-0 rounded-3 px-4 py-2 mt-2 w-100">
+            Submit Review
+          </button>
+        </form>
+      </div>
     </div>
 
     <div class="col-lg-4">
@@ -147,5 +332,72 @@
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block customjs %}
+<script>
+  $(document).ready(function() {
+    // Star selector interaction
+    $('.star-select').on('mouseenter', function() {
+      var value = $(this).data('value');
+      highlightStars(value);
+    }).on('mouseleave', function() {
+      var currentValue = $('#ratingValue').val();
+      highlightStars(currentValue);
+    }).on('click', function() {
+      var value = $(this).data('value');
+      $('#ratingValue').val(value);
+      $('#ratingFeedback').addClass('d-none');
+      highlightStars(value);
+    });
+
+    function highlightStars(count) {
+      $('.star-select').each(function() {
+        var starValue = $(this).data('value');
+        if (starValue <= count) {
+          $(this).removeClass('bi-star text-muted').addClass('bi-star-fill text-warning');
+        } else {
+          $(this).removeClass('bi-star-fill text-warning').addClass('bi-star text-muted');
+        }
+      });
+    }
+
+    // Form validation
+    $('#reviewForm').on('submit', function(e) {
+      var rating = $('#ratingValue').val();
+      var comment = $(this).find('textarea[name="comment"]').val().trim();
+      var hasError = false;
+
+      if (!rating) {
+        $('#ratingFeedback').removeClass('d-none');
+        hasError = true;
+      }
+
+      if (!this.checkValidity()) {
+        hasError = true;
+      }
+
+      if (hasError) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      $(this).addClass('was-validated');
+    });
+
+    // Smooth scroll for reviews link
+    $('#reviews-header-link').on('click', function(e) {
+      if (this.hash !== "") {
+        e.preventDefault();
+        var hash = this.hash;
+        $('html, body').animate({
+          scrollTop: $(hash).offset().top - 100 // offset for fixed header navbar
+        }, 300, function(){
+          window.location.hash = hash;
+        });
+      }
+    });
+  });
+</script>
 {% endblock %}
 

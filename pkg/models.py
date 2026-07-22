@@ -313,6 +313,17 @@ class Property(db.Model):
             if getattr(pa, "amenity", None)
         ]
 
+    @property
+    def average_rating(self):
+        valid_reviews = [r for r in self.reviews if r.review_rating is not None]
+        if not valid_reviews:
+            return 0.0
+        return round(sum(r.review_rating for r in valid_reviews) / len(valid_reviews), 1)
+
+    @property
+    def reviews_count(self):
+        return len(self.reviews)
+
 class Review(db.Model):
     __tablename__ = "reviews"
 
@@ -327,14 +338,17 @@ class Review(db.Model):
     review_bookingid = db.Column(
         db.Integer,
         db.ForeignKey("bookings.booking_id"),
-        nullable=False
+        nullable=True
     )
 
     review_userid = db.Column(
         db.Integer,
         db.ForeignKey("users.user_id"),
-        nullable=False
+        nullable=True
     )
+
+    guest_name = db.Column(db.String(100), nullable=True)
+    guest_email = db.Column(db.String(150), nullable=True)
 
     review_rating = db.Column(db.Integer)
     review_comment = db.Column(db.Text)
