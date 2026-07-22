@@ -214,7 +214,21 @@
                                             {% else %}
                                                 <span class="badge bg-secondary">Pending</span>
                                             {% endif %}
-                                            
+                                            {% if prop.reviews_count > 0 %}
+                                                <span class="text-warning small d-flex align-items-center gap-1">
+                                                    {% for i in range(1, 6) %}
+                                                        {% if prop.average_rating >= i %}
+                                                            <i class="bi bi-star-fill"></i>
+                                                        {% elif prop.average_rating >= i - 0.5 %}
+                                                            <i class="bi bi-star-half"></i>
+                                                        {% else %}
+                                                            <i class="bi bi-star"></i>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                    <span class="fw-bold text-dark ms-1">{{ prop.average_rating }}</span>
+                                                    <span class="text-muted small">({{ prop.reviews_count }})</span>
+                                                </span>
+                                            {% endif %}
                                         </div>
                                         <h4 class="card-title">{{ prop.prop_title }}</h4>
                                         <p class="text-muted mb-2">{{ prop.prop_address or prop.prop_category or prop.prop_city }}, {{ prop.state.state_name if prop.state else '' }}</p>
