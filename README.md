@@ -1,70 +1,145 @@
 # Verified Shortlet App
 
-Verified Shortlet is an API-first property booking platform with a Flask backend and a React frontend.
+Verified Shortlet is a production-style shortlet booking platform built with Flask, MySQL, and Docker. It supports property discovery, host onboarding, booking flows, payments, host verification, notifications, and an admin dashboard for moderation and operational oversight.
 
-## Stack
+This repository contains a Flask web application with a server-rendered UI powered by Flask templates and Jinja2, backed by SQLAlchemy models and Alembic migrations.
 
-- Backend: Flask, SQLAlchemy, Alembic, JWT auth
-- Frontend: React, React Router, Axios, Vite
-- Database: MySQL (configured through SQLAlchemy URI)
+## Why this project exists
 
-## Architecture
+The platform is designed to make shortlet management feel simple for three groups of users:
 
-- Flask serves JSON APIs under `/api/*` only.
-- React SPA handles all user-facing routes and rendering.
-- Authentication and authorization are role-based (customer, host, admin) using JWT bearer tokens.
-- API security includes request validation, upload checks, CORS controls, and security headers.
+- Visitors can browse properties, view details, and reserve stays.
+- Hosts can list properties, manage bookings, and submit verification documents.
+- Admins can review properties, oversee bookings, and approve or reject host verification.
 
-## Project Structure
+## Core features
 
-- `pkg/`
-  - `api/`: API blueprints and API-only helpers
-  - `models.py`: SQLAlchemy entities
-  - `config.py`: runtime and security config
-  - `__init__.py`: app factory, blueprint registration, middleware
-- `migrations/`: Alembic migration history
-- `frontend/`: React SPA codebase
-- `starter.py`: backend development entrypoint
-- `requirements.txt`: backend Python dependencies
+- Property listing and detail pages
+- User registration, login, and role-based access
+- Host property submission and dashboard management
+- Booking and reservation flow
+- Payment initiation and confirmation experience
+- Host verification workflow with NIN document upload
+- Notifications for booking and verification events
+- Admin dashboard for properties, bookings, and payments
+- Dockerized deployment with Nginx and MySQL
 
-## Quick Start
+## Tech stack
 
-### 1) Backend
+- Backend: Python, Flask, Flask-SQLAlchemy, Flask-Migrate, WTForms
+- Templating: Jinja2
+- Database: MySQL
+- Deployment: Docker Compose, Gunicorn, Nginx
+- Auth & security: session-based auth, CSRF protection, environment-based config
 
-1. Create and activate a virtual environment.
-2. Install dependencies:
-   - `pip install -r requirements.txt`
-3. Copy `.env.example` to `.env` and update values.
-4. Configure environment variables (see `docs/ENVIRONMENT.md`).
-5. Run migrations:
-   - `flask db upgrade`
-6. Start API server:
-   - `python starter.py`
+## Project structure
 
-Backend default URL: `http://127.0.0.1:8000`
-API base path: `http://127.0.0.1:8000/api`
+- [pkg/](pkg) — application package containing routes, models, services, templates, and forms
+- [migrations/](migrations) — Alembic migrations
+- [deployment/](deployment) — Docker and Nginx configuration
+- [instance/](instance) — instance-specific config support
+- [private_uploads/](private_uploads) — uploaded host documents and media assets
+- [starter.py](starter.py) — application entry point
+- [docker-compose.yml](docker-compose.yml) — local container orchestration
 
-### 2) Frontend
+## Prerequisites
 
-1. Open `frontend/`.
-2. Copy `.env.example` to `.env`.
-3. Install dependencies:
-   - `npm install`
-4. Run dev server:
-   - `npm run dev`
+Before running the app locally, make sure you have:
 
-Set `VITE_API_BASE_URL` to your API base URL (default `http://127.0.0.1:8000/api`).
+- Python 3.10+
+- MySQL running locally or Docker available
+- pip and virtualenv
 
-## Documentation
+## Local development
 
-- API overview: `docs/API.md`
-- Environment reference: `docs/ENVIRONMENT.md`
-- Development workflow: `docs/DEVELOPMENT.md`
-- Deployment checklist: `docs/DEPLOYMENT.md`
-- Frontend details: `frontend/README.md`
+### 1) Create and activate a virtual environment
 
-## Operational Notes
+On macOS/Linux:
 
-- The backend is intentionally API-only in this phase.
-- Legacy server-rendered pages and static site scaffolding were removed as part of cleanup.
-- Query loading and selected React shared components were optimized to reduce runtime overhead.
+```bash
+python -m venv venv
+source venv/bin/activate
+```
+
+On Windows PowerShell:
+
+```powershell
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+```
+
+### 2) Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3) Configure environment variables
+
+Create a `.env` file at the project root with values such as:
+
+```env
+SECRET_KEY=change-me-in-development
+SQLALCHEMY_DATABASE_URI=mysql+mysqlconnector://root:rootpass@127.0.0.1:3307/shortletdb
+MYSQL_DATABASE=shortletdb
+MYSQL_USER=appuser
+MYSQL_PASSWORD=appuserpass
+MYSQL_ROOT_PASSWORD=rootpass
+PAYSTACK_PUBLIC_KEY=your-public-key
+PAYSTACK_SECRET_KEY=your-secret-key
+PAYSTACK_CALLBACK_URL=http://127.0.0.1:8000/payment
+PORT=8000
+```
+
+### 4) Run database migrations
+
+```bash
+set FLASK_APP=starter.py
+flask db upgrade
+```
+
+### 5) Start the app
+
+```bash
+python starter.py
+```
+
+The app should be available at:
+
+- http://127.0.0.1:8000
+- production url: https://verified-shortlet-app-production.up.railway.app/
+- Health endpoint: http://127.0.0.1:8000/healthz
+
+## Docker deployment
+
+The project is also ready for containerized deployment using Docker Compose.
+
+```bash
+docker compose up --build
+```
+
+This starts:
+
+- the Flask application
+- MySQL
+- Nginx as a reverse proxy
+
+The default entrypoint runs migrations and launches Gunicorn automatically.
+
+## Typical user journeys
+
+- A visitor browses available properties and checks booking availability.
+- A host registers, adds property details, and uploads verification documents.
+- A customer completes a booking and proceeds through the payment experience.
+- An admin reviews property or host verification status from the dashboard.
+
+## Development notes
+
+- Database migrations are managed with Alembic.
+- Static assets live under [pkg/static](pkg/static).
+- Templates are organized under [pkg/templates](pkg/templates).
+- Uploaded documents are stored under [private_uploads](private_uploads).
+
+## Next steps
+
+If you want to extend the platform, a strong next step would be to improve the current Flask experience with additional admin workflows, richer booking automation, and stronger deployment hardening.

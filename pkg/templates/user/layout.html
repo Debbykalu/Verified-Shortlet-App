@@ -70,7 +70,7 @@
                         <a class="navbar-brand d-flex align-items-center gap-2" href="{{url_for('home')}}">
                             <i class="bi bi-shop fs-4"></i>  DebKits Short-let
                         </a>
-                        <a href="{{url_for('home')}}" class="nav-link fw-semibold text-muted d-none d-md-inline-block ms-2 home-nav-link"><i class="bi bi-house-door me-1"></i>Home</a>
+                        <a href="{{url_for('home')}}" class="nav-link navbar-home fw-semibold text-muted d-none d-md-inline-block ms-2 home-nav-link"><i class="bi bi-house-door me-1"></i>Home</a>
                     </div>
                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                         <span class="navbar-toggler-icon"></span>
@@ -103,9 +103,11 @@
                 </div>
             </nav>
         </div>
+    <main class="main-content-wrapper">
     {%block main_content%}
 
     {% endblock %}
+    </main>
   <footer class="footer mt-auto py-5 text-start">
         <div class="container">
             <div class="row gy-4">

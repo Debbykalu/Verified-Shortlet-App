@@ -19,9 +19,12 @@ echo "FLASK_APP=starter.py"
 
 export FLASK_APP=starter.py
 
-echo "Running migrations..."
+flask db upgrade || {
+    echo "Warning: Database upgrade failed. Stamping migrations to head and retrying..."
+    flask db stamp head
+    flask db upgrade
+}
 
-flask db upgrade
 
 echo "Starting Gunicorn..."
 

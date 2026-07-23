@@ -113,6 +113,11 @@ body{
 }
 
 /* Navbar */
+.navbar-home {
+    font-weight: bold;
+    color: var(--primary-color) !important;
+    font-size: 20px !important;
+}
 .navbar {
   background-color: #ffffff !important;
   border-bottom: 3px solid var(--primary-color);
@@ -803,38 +808,44 @@ margin-bottom: 20px;
   /* Mobile Banner Responsiveness */
   .banner {
     height: auto !important;
-    min-height: 100vh;
-    padding-top: 100px !important;
-    padding-bottom: 50px !important;
-    margin-top: -80px !important;
+    min-height: auto !important;
+    padding-top: 40px !important;
+    padding-bottom: 40px !important;
+    margin-top: 0 !important; /* Cancel negative margin so it starts below the fixed navbar */
   }
   .overlay {
-    height: 100% !important;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    height: auto !important;
+    position: relative !important;
+    background-color: rgba(0, 0, 0, 0.65) !important;
+    padding: 30px 15px !important;
+    border-radius: 10px;
+    margin-bottom: 20px;
   }
   .hero-content {
     height: auto !important;
-    padding: 50px 15px !important;
+    padding: 0 !important;
     position: relative;
     z-index: 2;
+    text-align: center;
   }
   .hero-content h1 {
-    font-size: 2rem !important;
+    font-size: 1.8rem !important;
     line-height: 1.3;
   }
   .search-wrapper {
     position: relative !important;
     z-index: 2;
-    padding: 0 15px !important;
-    margin-top: 10px !important;
+    padding: 0 !important;
+    margin-top: 0 !important;
   }
   .search-box {
+    position: relative !important;
+    bottom: auto !important;
     padding: 25px 20px !important;
     width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    border-radius: 10px !important;
   }
 }
 

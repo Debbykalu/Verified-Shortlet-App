@@ -99,9 +99,9 @@ def sync_database():
 
         for table in tables:
             if table == 'alembic_version':
-                print("Setting alembic_version on Railway to 'fec59ce4513c'...", end="", flush=True)
+                print("Setting alembic_version on Railway to 'f8a62e97f830'...", end="", flush=True)
                 dest_cursor.execute("TRUNCATE TABLE `alembic_version`")
-                dest_cursor.execute("INSERT INTO `alembic_version` (`version_num`) VALUES ('fec59ce4513c')")
+                dest_cursor.execute("INSERT INTO `alembic_version` (`version_num`) VALUES ('f8a62e97f830')")
                 print(" (Set to codebase HEAD)")
                 continue
 
