@@ -1,4 +1,4 @@
-import json,secrets, datetime, requests
+import json, secrets, datetime, requests, hmac, hashlib
 import re
 
 from datetime import date
@@ -10,7 +10,7 @@ from urllib.request import Request, urlopen
 
 from flask import render_template, request, url_for, redirect, flash, session, jsonify, current_app
 from werkzeug.security import generate_password_hash, check_password_hash
-from pkg import app
+from pkg import app, csrf
 from pkg.dashboard_service import DashboardService
 from pkg.forms import RegisterForm, LoginForm, BookingDetailsForm
 from pkg.models import User, Property, Amenity, BookingDetail, BookingPayment, Review, db
@@ -74,6 +74,59 @@ def _booking_id_from_reference(ref):
     if len(parts) >= 3 and parts[0] == 'BK' and parts[1].isdigit():
         return int(parts[1])
     return None
+
+
+def _process_successful_payment(ref):
+    booking_detail_id = _booking_id_from_reference(ref)
+    if not booking_detail_id:
+        return False
+
+    booking_detail = BookingDetail.query.get(booking_detail_id)
+    if not booking_detail:
+        return False
+
+    # Idempotency check: if already paid, do nothing
+    if booking_detail.booking_status == "paid":
+        return True
+
+    booking_detail.booking_status = "paid"
+
+    payment = BookingPayment.query.filter_by(
+        advert_payment_reference=ref
+    ).first()
+
+    if payment:
+        payment.booking_payment_status = "paid"
+
+    db.session.commit()
+
+    if booking_detail.booking_userid:
+        NotificationService.notify(
+           user_id=booking_detail.booking_userid,
+           title="Payment Successful",
+           message=(
+             f"Your payment for "
+             f"{booking_detail.property.prop_title} "
+             f"was successful. Your booking has been confirmed."
+            ),
+           notification_type=NotificationType.PAYMENT_SUCCESS,
+           reference_type="booking",
+           reference_id=booking_detail.booking_detail_id
+        )
+
+    NotificationService.notify(
+        user_id=booking_detail.property.prop_userid,
+        title="New Paid Booking",
+        message=(
+            f"{booking_detail.full_name} has successfully "
+            f"booked your property "
+            f"{booking_detail.property.prop_title}."
+        ),
+        notification_type=NotificationType.HOST_NEW_BOOKING,
+        reference_type="booking",
+        reference_id=booking_detail.booking_detail_id
+    )
+    return True
 
 
 def _build_paystack_callback_url():
@@ -261,6 +314,7 @@ def paystack_init():
         "reference": reference,
         "callback_url": callback_url,
         "currency": "NGN",
+        "channels": ["card", "bank_transfer", "bank", "ussd"],
     }
 
     headers = {
@@ -396,42 +450,7 @@ def paystack_landing():
 
     if rsp.get("status") and transaction_status in ("success", "successful"):
 
-        booking_detail.booking_status = "paid"
-
-        payment = BookingPayment.query.filter_by(
-            advert_payment_reference=ref
-        ).first()
-
-        if payment:
-            payment.booking_payment_status = "paid"
-
-        db.session.commit()
-
-        if booking_detail.booking_userid:
-            NotificationService.notify(
-               user_id=booking_detail.booking_userid,
-               title="Payment Successful",
-               message=(
-                 f"Your payment for "
-                 f"{booking_detail.property.prop_title} "
-                 f"was successful. Your booking has been confirmed."
-                ),
-               notification_type=NotificationType.PAYMENT_SUCCESS,
-               reference_type="booking",
-               reference_id=booking_detail.booking_detail_id
-            )
-        NotificationService.notify(
-            user_id=booking_detail.property.prop_userid,
-            title="New Paid Booking",
-            message=(
-                f"{booking_detail.full_name} has successfully "
-                f"booked your property "
-                f"{booking_detail.property.prop_title}."
-            ),
-            notification_type=NotificationType.HOST_NEW_BOOKING,
-            reference_type="booking",
-            reference_id=booking_detail.booking_detail_id
-        )
+        _process_successful_payment(ref)
 
         session["last_confirmed_booking_id"] = booking_detail.booking_detail_id
         session.pop("payref", None)
@@ -468,6 +487,56 @@ def paystack_landing():
             booking_detail_id=booking_detail.booking_detail_id
         )
     )
+
+
+@app.route('/webhook/paystack/', methods=['POST'])
+@csrf.exempt
+def paystack_webhook():
+    signature = request.headers.get('x-paystack-signature')
+    if not signature:
+        current_app.logger.warning("Paystack webhook received without signature.")
+        return jsonify({"error": "Missing signature"}), 401
+
+    paystack_secret = current_app.config.get('PAYSTACK_SECRET_KEY')
+    if not paystack_secret:
+        current_app.logger.error("Paystack secret key is missing in config.")
+        return jsonify({"error": "Paystack is not configured"}), 500
+
+    raw_body = request.get_data()
+    expected_signature = hmac.new(
+        paystack_secret.encode('utf-8'),
+        raw_body,
+        hashlib.sha512
+    ).hexdigest()
+
+    if not hmac.compare_digest(expected_signature, signature):
+        current_app.logger.warning("Paystack webhook received with invalid signature.")
+        return jsonify({"error": "Invalid signature"}), 401
+
+    try:
+        event_data = request.get_json()
+    except Exception as e:
+        current_app.logger.error(f"Failed to parse Paystack webhook JSON: {e}")
+        return jsonify({"error": "Invalid JSON"}), 400
+
+    event_type = event_data.get('event')
+    current_app.logger.info(f"Paystack webhook received: event={event_type}")
+
+    if event_type == 'charge.success':
+        data = event_data.get('data', {})
+        ref = data.get('reference')
+        if ref:
+            status = data.get('status', '').lower()
+            if status in ('success', 'successful'):
+                success = _process_successful_payment(ref)
+                if success:
+                    current_app.logger.info(f"Successfully processed payment for reference: {ref}")
+                    return jsonify({"status": "processed"}), 200
+                else:
+                    current_app.logger.warning(f"Failed to process payment helper for reference: {ref}")
+
+    return jsonify({"status": "ignored"}), 200
+
 
 @app.route('/listing/')
 def listing():
