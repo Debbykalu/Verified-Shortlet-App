@@ -11,7 +11,7 @@ class GeneralConfig(object):
 
 class ProConfig(GeneralConfig):
     ADMIN_EMAIL="live@admin.com"
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL')  
+    SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI')  
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', '').strip()
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', GeneralConfig.SECRET_KEY).strip()
