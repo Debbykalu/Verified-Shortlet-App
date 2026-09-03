@@ -53,6 +53,7 @@ services:
 
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./shortletdb_backup.sql:/docker-entrypoint-initdb.d/init.sql:ro
 
     # Bind only to the local machine for `python starter.py` and Flask CLI.
     ports:

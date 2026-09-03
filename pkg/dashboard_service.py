@@ -290,19 +290,10 @@ class DashboardService:
                 Property.prop_description.ilike(normalized_location),
                 Property.prop_address.ilike(normalized_location),
                 Property.prop_city.ilike(normalized_location),
+                PropertyState.state_name.ilike(normalized_location),
+                PropertyLGA.lga_name.ilike(normalized_location),
             ]
-
-            try:
-                query = query.filter(or_(*location_filters))
-            except Exception:
-                query = query.filter(
-                    or_(
-                        Property.prop_title.ilike(normalized_location),
-                        Property.prop_description.ilike(normalized_location),
-                        Property.prop_address.ilike(normalized_location),
-                        Property.prop_city.ilike(normalized_location),
-                    )
-                )
+            query = query.outerjoin(Property.state).outerjoin(Property.lga).filter(or_(*location_filters))
 
         if verified_only:
             query = query.filter(Property.is_verified == True)
@@ -332,7 +323,7 @@ class DashboardService:
                 end_date = date.fromisoformat(checkout_date)
                 if end_date >= start_date:
                     overlapping = (
-                        BookingDetail.query.with_entities(BookingDetail.booking_propid)
+                        db.session.query(BookingDetail.booking_propid)
                         .filter(
                             BookingDetail.booking_status.in_(["pending_payment", "paid"]),
                             BookingDetail.checkin_date <= end_date,
@@ -340,7 +331,7 @@ class DashboardService:
                         )
                         .subquery()
                     )
-                    query = query.filter(~Property.prop_id.in_(overlapping))
+                    query = query.filter(~Property.prop_id.in_(db.select(overlapping)))
             except ValueError:
                 pass
 

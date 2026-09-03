@@ -1,7 +1,46 @@
 import os
+import socket
 from dotenv import load_dotenv
 
 load_dotenv()
+
+
+def get_sqlalchemy_database_uri():
+    uri = os.getenv('SQLALCHEMY_DATABASE_URI', '').strip()
+    user = os.getenv('MYSQL_USER', 'appuser').strip()
+    password = os.getenv('MYSQL_PASSWORD', 'appuserpass').strip()
+    db_name = os.getenv('MYSQL_DATABASE', 'shortletdb').strip()
+    host = os.getenv('MYSQL_HOST', '').strip()
+    port = os.getenv('MYSQL_PORT', '').strip()
+
+    is_in_docker = os.path.exists('/.dockerenv') or os.getenv('RUNNING_IN_DOCKER') == 'true'
+
+    if is_in_docker:
+        db_host = host or 'mysql'
+        db_port = port or '3306'
+        if db_host in ('127.0.0.1', 'localhost'):
+            db_host = 'mysql'
+            db_port = '3306'
+        return f"mysql+mysqlconnector://{user}:{password}@{db_host}:{db_port}/{db_name}"
+
+    if uri:
+        if '@mysql' in uri:
+            try:
+                socket.gethostbyname('mysql')
+            except socket.gaierror:
+                return uri.replace('@mysql:3306', '@127.0.0.1:3307').replace('@mysql', '@127.0.0.1:3307')
+        return uri
+
+    db_host = host or '127.0.0.1'
+    db_port = port or '3307'
+    if db_host == 'mysql':
+        try:
+            socket.gethostbyname('mysql')
+        except socket.gaierror:
+            db_host = '127.0.0.1'
+            db_port = '3307'
+
+    return f"mysql+mysqlconnector://{user}:{password}@{db_host}:{db_port}/{db_name}"
 
 
 class GeneralConfig(object):
@@ -11,7 +50,7 @@ class GeneralConfig(object):
 
 class ProConfig(GeneralConfig):
     ADMIN_EMAIL="live@admin.com"
-    SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI')  
+    SQLALCHEMY_DATABASE_URI = get_sqlalchemy_database_uri()  
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', '').strip()
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', GeneralConfig.SECRET_KEY).strip()

@@ -1120,13 +1120,8 @@ def register():
         db.session.add(user)
         db.session.commit()
 
-        session['useronline'] = user.user_id
-        session['userrole'] = user.user_role
-
-        flash('Account created successfully!', category='success')
-        if user.user_role == 'host':
-            return redirect(url_for('host_dashboard'))
-        return redirect(url_for('dashboard'))
+        flash('Account created successfully! Please sign in with your credentials.', category='success')
+        return redirect(url_for('login'))
 
     return render_template('user/registration.html', register=register_form)
 

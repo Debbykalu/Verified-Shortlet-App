@@ -1,8 +1,191 @@
 -- Verified Shortlet Database Dump
 SET FOREIGN_KEY_CHECKS = 0;
 
+CREATE TABLE IF NOT EXISTS `admins` (
+  `admin_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `admin_email` VARCHAR(150) NOT NULL UNIQUE,
+  `admin_password` VARCHAR(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `alembic_version` (
+  `version_num` VARCHAR(32) NOT NULL,
+  PRIMARY KEY (`version_num`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `users` (
+  `user_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `user_firstname` VARCHAR(200) NOT NULL,
+  `user_lastname` VARCHAR(200) NOT NULL,
+  `user_email` VARCHAR(150) NOT NULL UNIQUE,
+  `user_phoneno` VARCHAR(50) NOT NULL UNIQUE,
+  `user_password` VARCHAR(255) NOT NULL,
+  `user_profileimage` VARCHAR(255) NULL,
+  `is_verified` TINYINT(1) DEFAULT 0,
+  `user_status` ENUM('active', 'inactive', 'suspended') DEFAULT 'active',
+  `user_role` ENUM('customer', 'host', 'admin') DEFAULT 'customer',
+  `user_timecreated` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `user_timeupdated` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `nin_number` VARCHAR(20) NULL,
+  `nin_document` VARCHAR(255) NULL,
+  `verification_status` ENUM('Pending', 'Verified', 'Suspended') NULL DEFAULT 'Pending',
+  `verified_at` DATETIME NULL,
+  `verified_by` INT NULL,
+  `verification_reason` TEXT NULL,
+  CONSTRAINT `fk_users_verified_by` FOREIGN KEY (`verified_by`) REFERENCES `admins` (`admin_id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `property_types` (
+  `prop_type_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `prop_typename` VARCHAR(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `property_states` (
+  `state_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `state_name` VARCHAR(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `property_lgas` (
+  `lga_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `lga_name` VARCHAR(100) NOT NULL,
+  `state_id` INT NOT NULL,
+  CONSTRAINT `fk_property_lgas_state` FOREIGN KEY (`state_id`) REFERENCES `property_states` (`state_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `properties` (
+  `prop_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `prop_userid` INT NOT NULL,
+  `prop_typeid` INT NOT NULL,
+  `prop_stateid` INT NOT NULL,
+  `prop_lgaid` INT NOT NULL,
+  `prop_title` VARCHAR(255) NOT NULL,
+  `prop_description` TEXT NULL,
+  `prop_category` VARCHAR(100) NOT NULL,
+  `prop_address` VARCHAR(255) NULL,
+  `prop_city` VARCHAR(150) NULL,
+  `price_per_night` DECIMAL(12,2) NOT NULL,
+  `max_guest` INT NULL,
+  `bedrooms` INT NULL,
+  `bathrooms` INT NULL,
+  `is_verified` TINYINT(1) DEFAULT 0,
+  `prop_availability_status` ENUM('available', 'booked', 'inactive') DEFAULT 'available',
+  `prop_mainimage_url` VARCHAR(255) NULL,
+  CONSTRAINT `fk_properties_user` FOREIGN KEY (`prop_userid`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_properties_type` FOREIGN KEY (`prop_typeid`) REFERENCES `property_types` (`prop_type_id`),
+  CONSTRAINT `fk_properties_state` FOREIGN KEY (`prop_stateid`) REFERENCES `property_states` (`state_id`),
+  CONSTRAINT `fk_properties_lga` FOREIGN KEY (`prop_lgaid`) REFERENCES `property_lgas` (`lga_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `amenities` (
+  `amenity_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `amenity_name` VARCHAR(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `property_amenities` (
+  `property_amenity_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `prop_id` INT NOT NULL,
+  `amenity_id` INT NOT NULL,
+  CONSTRAINT `fk_property_amenities_prop` FOREIGN KEY (`prop_id`) REFERENCES `properties` (`prop_id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_property_amenities_amenity` FOREIGN KEY (`amenity_id`) REFERENCES `amenities` (`amenity_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `booking_details` (
+  `booking_detail_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `booking_userid` INT NULL,
+  `booking_propid` INT NOT NULL,
+  `full_name` VARCHAR(200) NOT NULL,
+  `email` VARCHAR(150) NOT NULL,
+  `phone` VARCHAR(50) NOT NULL,
+  `checkin_date` DATE NOT NULL,
+  `checkout_date` DATE NOT NULL,
+  `guests` INT NOT NULL DEFAULT 1,
+  `special_requests` TEXT NULL,
+  `terms_agreed` TINYINT(1) NOT NULL DEFAULT 0,
+  `nights` INT NOT NULL DEFAULT 1,
+  `subtotal` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  `cleaning_fee` DECIMAL(12,2) NOT NULL DEFAULT 5000.00,
+  `service_fee` DECIMAL(12,2) NOT NULL DEFAULT 3000.00,
+  `total_amount` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  `booking_status` ENUM('pending_payment', 'paid', 'cancelled') DEFAULT 'pending_payment',
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT `fk_booking_details_user` FOREIGN KEY (`booking_userid`) REFERENCES `users` (`user_id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_booking_details_prop` FOREIGN KEY (`booking_propid`) REFERENCES `properties` (`prop_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `bookings` (
+  `booking_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `booking_userid` INT NOT NULL,
+  `booking_propid` INT NOT NULL,
+  `checkin_date` DATE NOT NULL,
+  `checkout_date` DATE NOT NULL,
+  `total_amount` DECIMAL(12,2) NOT NULL,
+  `booking_status` ENUM('pending', 'confirmed', 'cancelled', 'completed') DEFAULT 'pending',
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT `fk_bookings_user` FOREIGN KEY (`booking_userid`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_bookings_prop` FOREIGN KEY (`booking_propid`) REFERENCES `properties` (`prop_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `properties_images` (
+  `propimg_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `img_propid` INT NOT NULL,
+  `image_url` VARCHAR(255) NOT NULL,
+  `is_featured` TINYINT(1) DEFAULT 0,
+  `uploaded_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT `fk_properties_images_prop` FOREIGN KEY (`img_propid`) REFERENCES `properties` (`prop_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `booking_payments` (
+  `payment_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `booking_amount` DECIMAL(12,2) NOT NULL,
+  `booking_payment_date` DATETIME NOT NULL,
+  `booking_payment_status` ENUM('pending', 'paid', 'failed', 'cancelled') NOT NULL DEFAULT 'pending',
+  `booking_userid` INT NULL,
+  `booking_bookingid` INT NOT NULL,
+  `advert_payment_reference` VARCHAR(100) NOT NULL UNIQUE,
+  CONSTRAINT `fk_booking_payments_user` FOREIGN KEY (`booking_userid`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_booking_payments_detail` FOREIGN KEY (`booking_bookingid`) REFERENCES `booking_details` (`booking_detail_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `reviews` (
+  `review_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `review_propid` INT NOT NULL,
+  `review_bookingid` INT NULL,
+  `review_userid` INT NULL,
+  `guest_name` VARCHAR(100) NULL,
+  `guest_email` VARCHAR(150) NULL,
+  `review_rating` INT NULL,
+  `review_comment` TEXT NULL,
+  `review_time` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT `fk_reviews_prop` FOREIGN KEY (`review_propid`) REFERENCES `properties` (`prop_id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_reviews_booking` FOREIGN KEY (`review_bookingid`) REFERENCES `bookings` (`booking_id`),
+  CONSTRAINT `fk_reviews_user` FOREIGN KEY (`review_userid`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `notifications` (
+  `notification_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `recipient_user_id` INT NOT NULL,
+  `notification_title` VARCHAR(200) NOT NULL,
+  `notification_message` TEXT NOT NULL,
+  `notification_type` VARCHAR(50) NOT NULL,
+  `notification_icon` VARCHAR(50) DEFAULT 'bell',
+  `notification_reference_type` VARCHAR(50) NULL,
+  `notification_reference_id` INT NULL,
+  `notification_read_at` DATETIME NULL,
+  `notification_timecreated` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `notification_timeupdated` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `notification_is_read` TINYINT(1) NOT NULL DEFAULT 0,
+  CONSTRAINT `fk_notifications_user` FOREIGN KEY (`recipient_user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- Ensure schema matches Flask models by making booking_payments.booking_userid nullable
 ALTER TABLE `booking_payments` MODIFY `booking_userid` INT NULL;
+
+-- Ensure schema matches Flask models by adding guest fields to reviews table if missing
+ALTER TABLE `reviews` ADD COLUMN IF NOT EXISTS `guest_name` VARCHAR(100) NULL AFTER `review_userid`;
+ALTER TABLE `reviews` ADD COLUMN IF NOT EXISTS `guest_email` VARCHAR(150) NULL AFTER `guest_name`;
+ALTER TABLE `reviews` MODIFY COLUMN `review_bookingid` INT NULL;
+ALTER TABLE `reviews` MODIFY COLUMN `review_userid` INT NULL;
 
 -- Dumping data for table admins
 TRUNCATE TABLE `admins`;
@@ -11,7 +194,7 @@ INSERT INTO `admins` (`admin_id`, `admin_email`, `admin_password`) VALUES (2, 'a
 
 -- Dumping data for table alembic_version
 TRUNCATE TABLE `alembic_version`;
-INSERT INTO `alembic_version` (`version_num`) VALUES ('fec59ce4513c');
+INSERT INTO `alembic_version` (`version_num`) VALUES ('f8a62e97f830');
 
 -- Dumping data for table amenities
 TRUNCATE TABLE `amenities`;
